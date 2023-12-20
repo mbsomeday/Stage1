@@ -112,31 +112,29 @@ cfgs = {
 }
 
 
-def _vgg(arch, cfg, batch_norm, pretrained, progress, device, **kwargs):
+def _vgg(arch, cfg, batch_norm, pretrained, progress, device, weight_path, **kwargs):
     if pretrained:
         kwargs["init_weights"] = False
     model = VGG16(make_layers(cfgs[cfg], batch_norm=batch_norm), **kwargs)
     if pretrained:
         script_dir = os.path.dirname(__file__)
         state_dict = torch.load(
-            script_dir + "/state_dicts/" + arch + ".pt", map_location=device
+            weight_path, map_location=device
         )
         model.load_state_dict(state_dict)
     return model
 
 
-def vgg16_bn(pretrained=False, progress=True, device="cpu", **kwargs):
+def vgg16_bn(pretrained=True, progress=True, device="cpu", weight_path=None, **kwargs):
     """VGG 16-layer model (configuration "D") with batch normalization
 
     Args:
         pretrained (bool): If True, returns a model pre-trained on ImageNet
         progress (bool): If True, displays a progress bar of the download to stderr
     """
-    return _vgg("vgg16_bn", "D", True, pretrained, progress, device, **kwargs)
+    return _vgg("vgg16_bn", "D", True, pretrained, progress, device, weight_path, **kwargs)
 
 
-if __name__ == '__main__':
-    model = vgg16_bn(pretrained=True)
 
 
 
