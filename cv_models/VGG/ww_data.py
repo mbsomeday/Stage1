@@ -32,13 +32,16 @@ def test_dataloader():
 # num_classes = 10
 if torch.cuda.is_available():
     use_gpu = True
+    device = 'cuda'
 else:
     use_gpu = False
+    device = 'cpu'
 
 
 test_dataset, test_loader = test_dataloader()
 
-model = vgg16_bn(pretrained=True)
+model = vgg16_bn(pretrained=True, weight_path=None)
+model = model.to(device)
 
 # 测试开始
 model.eval()
