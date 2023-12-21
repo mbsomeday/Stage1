@@ -125,7 +125,7 @@ def _vgg(arch, cfg, batch_norm, pretrained, progress, device, weight_path, **kwa
     return model
 
 
-def vgg16_bn(pretrained=True, progress=True, device="cpu", weight_path=None, **kwargs):
+def vgg16_bn(pretrained=True, progress=True, device="cpu", weight_path=r'state_dicts\vgg16_bn.pt', **kwargs):
     """VGG 16-layer model (configuration "D") with batch normalization
 
     Args:
