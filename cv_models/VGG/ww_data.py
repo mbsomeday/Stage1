@@ -19,7 +19,7 @@ def test_dataloader():
             T.Normalize(mean, std),
         ]
     )
-    dataset = datasets.CIFAR10(root='./data', train=False, transform=transform)
+    dataset = datasets.CIFAR10(root=r'D:\my_phd\on_git\test\data', train=False, transform=transform)
     dataloader = DataLoader(
         dataset,
         batch_size=batch_size,
