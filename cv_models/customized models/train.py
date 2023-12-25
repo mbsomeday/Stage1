@@ -1,109 +1,119 @@
+import torch
 from torch import nn
 from torchsummary import summary
-import torch
-from torchvision import datasets, transforms
+from torchvision import transforms, datasets
 from torch.utils.data import DataLoader
 from tqdm import tqdm
-import torch.nn.functional as F
 
 
-BATCH_SIZE = 64
-EPOCHS = 100
+BATCH_SIZE = 4
+EPOCH = 10
 
-
-class LeNet(nn.Module):
-    def __init__(self, num_classes):
+class Net(nn.Module):
+    def __init__(self):
         super().__init__()
-        self.num_classes = num_classes
         self.features = nn.Sequential(
-            nn.Conv2d(1, 10, 5),
+            nn.Conv2d(1, 6, 5, padding=2),
             nn.ReLU(),
             nn.MaxPool2d(2, 2),
 
-            nn.Conv2d(10, 20, 3),
+            nn.Conv2d(6, 16, 5),
             nn.ReLU(),
-            # nn.MaxPool2d(2, 2)
+            nn.MaxPool2d(2, 2)
         )
-        self.classifier = nn.Sequential(
-            nn.Linear(2000, 500),
+        self.classifiers = nn.Sequential(
+            nn.Linear(400, 120),
             nn.ReLU(),
-            nn.Linear(500, self.num_classes),
-            # nn.ReLU(),
+
+            nn.Linear(120, 84),
+            nn.ReLU(),
+
+            nn.Linear(84, 10)
         )
 
     def forward(self, x):
-        batch_size = x.shape[0]
-
-        x = self.features(x)
-        x = x.view(batch_size, -1)
-        x = self.classifier(x)
-        out = torch.nn.functional.log_softmax(x, dim=1)
+        feature = self.features(x)
+        feature = feature.view(x.shape[0], -1)
+        out = self.classifiers(feature)
         return out
 
-def train(dataloader, loss_fn, optimizer):
-    size = len(dataloader.dataset)
+
+def get_dataloader():
+    transformer = transforms.Compose([
+        transforms.ToTensor(),
+        transforms.Normalize((0.1307,), (0.3081,))
+    ])
+    train_set = datasets.MNIST(r'data', train=True, transform=transformer, download=False)
+    test_set = datasets.MNIST(r'data', train=False, transform=transformer, download=False)
+
+    train_loader = DataLoader(train_set, BATCH_SIZE, shuffle=True)
+    test_loader = DataLoader(test_set, BATCH_SIZE, shuffle=True)
+
+    return train_loader, test_loader
+
+def train(model, train_loader, epoch):
     model.train()
-    for batch, (X, y) in enumerate(dataloader):
+    total_batch = len(train_loader)
+
+    for batch_i, (X, y) in enumerate(train_loader):
+        print(y)
+
+        out = model(X)
+        cur_loss = loss_fn(out, y)
 
         optimizer.zero_grad()
-        pred = model(X)
-
-        loss = loss_fn(pred, y)
-        loss.backward()
+        cur_loss.backward()
         optimizer.step()
 
-        if batch % 100 == 0:
-            loss, current = loss.item(), (batch + 1) * len(X)
-            print(f"loss: {loss:>7f}  [{current:>5d}/{size:>5d}]")
+        _, pred = torch.max(out, axis=1)
 
+        if batch_i % 100 == 0:
+            print(f"Epoch:{epoch}, Batch: {batch_i}/{total_batch}, loss:{cur_loss.item():.5f}")
 
-transform = transforms.Compose([
-    transforms.ToTensor(),
-    transforms.Normalize([0.5],[0.5])
-])
-
-
-train_set = datasets.MNIST(root=r'D:\my_phd\on_git\test\data',
-                           train=True,
-                           transform=transform,
-                           download=False)
-test_set = datasets.MNIST(root=r'D:\my_phd\on_git\test\data',
-                          train=False,
-                          transform=transform,
-                          download=False)
-
-train_dataloader = DataLoader(train_set, batch_size=BATCH_SIZE, shuffle=True)
-test_dataloader = DataLoader(test_set, batch_size=BATCH_SIZE, shuffle=True)
-model = LeNet(10)
-
-# print(model)
-
-loss = nn.CrossEntropyLoss()
-optimizer = torch.optim.SGD(model.parameters(), lr=1e-3)
-
-# summary(model, (1, 28, 28), 4)
-
-def test(dataloader):
-    size = len(dataloader.dataset)
-    num_batches = len(dataloader)
+def test(model, test_loader, epoch):
     model.eval()
-    test_loss, correct = 0, 0
+    test_loss, test_correct, test_acc = 0.0, 0, 0.0
+    test_size = len(test_loader.dataset)
     with torch.no_grad():
-        for X, y in tqdm(dataloader):
+        for X, y in test_loader:
             pred = model(X)
-            correct += (pred.argmax(1) == y).type(torch.float).sum().item()
-    correct /= size
-    if correct > best_acc:
-        torch.save(model.state_dict(), 'model.pth')
-
-    print(f"Test accuracy: {(100*correct):>0.1f}%")
+            test_loss += loss_fn(pred, y).item()
+            test_correct += torch.sum(pred.argmax(1) == y)
+        test_acc = test_correct / test_size
+    print(f"Test loss:{test_loss:>.5f}, Test Accuracy:{test_acc:>.4f}")
 
 
-best_acc = 1e-10
-for t in range(EPOCHS):
-    print(f"-------------- {t+1} --------------")
-    train(train_dataloader, loss, optimizer)
-    test(test_dataloader)
+if __name__ == '__main__':
+    model = Net()
+    # summary(model, (1, 28, 28), 4)
+
+    loss_fn = nn.CrossEntropyLoss()
+    optimizer = torch.optim.SGD(model.parameters(), lr=0.01, momentum=0.9)
+
+    train_loader, test_loader = get_dataloader()
+
+
+    for epoch_i in range(EPOCH):
+        train(model, train_loader, epoch_i)
+        test(model, test_loader, epoch_i)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
