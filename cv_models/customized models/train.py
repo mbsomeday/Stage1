@@ -12,6 +12,7 @@ EPOCH = 10
 DATA_PATH = r'D:\my_phd\on_git\test\data'
 MODEL_WEIGHTS = r'model.pth'
 
+
 class Net(nn.Module):
     def __init__(self):
         super().__init__()
@@ -54,6 +55,7 @@ def get_dataloader():
 
     return train_loader, test_loader
 
+
 def train(model, train_loader, epoch):
     model.train()
     total_batch = len(train_loader)
@@ -70,6 +72,7 @@ def train(model, train_loader, epoch):
 
         if batch_i % 100 == 0:
             print(f"Epoch:{epoch}, Batch: {batch_i}/{total_batch}, loss:{cur_loss.item():.5f}")
+
 
 def test(model, test_loader):
     model.eval()
@@ -91,14 +94,15 @@ def test(model, test_loader):
         state_dict['acc'] = test_acc
         torch.save(state_dict, 'model.pth')
 
-def load_model():
 
+def load_model():
     model = Net()
     checkpoint = torch.load(MODEL_WEIGHTS)
     model.load_state_dict(checkpoint['model'])
     # accuracy = checkpoint['acc']
-    _, test_loader = get_dataloader()
-    test(model, test_loader)
+    # _, test_loader = get_dataloader()
+    # test(model, test_loader)
+    return model
 
 
 
