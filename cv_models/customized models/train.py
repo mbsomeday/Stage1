@@ -4,10 +4,13 @@ from torchsummary import summary
 from torchvision import transforms, datasets
 from torch.utils.data import DataLoader
 from tqdm import tqdm
+import math
 
 
-BATCH_SIZE = 4
+BATCH_SIZE = 64
 EPOCH = 10
+DATA_PATH = r'D:\my_phd\on_git\test\data'
+MODEL_WEIGHTS = r'model.pth'
 
 class Net(nn.Module):
     def __init__(self):
@@ -43,8 +46,8 @@ def get_dataloader():
         transforms.ToTensor(),
         transforms.Normalize((0.1307,), (0.3081,))
     ])
-    train_set = datasets.MNIST(r'data', train=True, transform=transformer, download=False)
-    test_set = datasets.MNIST(r'data', train=False, transform=transformer, download=False)
+    train_set = datasets.MNIST(DATA_PATH, train=True, transform=transformer, download=False)
+    test_set = datasets.MNIST(DATA_PATH, train=False, transform=transformer, download=False)
 
     train_loader = DataLoader(train_set, BATCH_SIZE, shuffle=True)
     test_loader = DataLoader(test_set, BATCH_SIZE, shuffle=True)
@@ -56,8 +59,6 @@ def train(model, train_loader, epoch):
     total_batch = len(train_loader)
 
     for batch_i, (X, y) in enumerate(train_loader):
-        print(y)
-
         out = model(X)
         cur_loss = loss_fn(out, y)
 
@@ -70,17 +71,35 @@ def train(model, train_loader, epoch):
         if batch_i % 100 == 0:
             print(f"Epoch:{epoch}, Batch: {batch_i}/{total_batch}, loss:{cur_loss.item():.5f}")
 
-def test(model, test_loader, epoch):
+def test(model, test_loader):
     model.eval()
     test_loss, test_correct, test_acc = 0.0, 0, 0.0
     test_size = len(test_loader.dataset)
+
+    state_dict = {
+        'model': model.state_dict(),
+        'acc': test_correct
+    }
     with torch.no_grad():
         for X, y in test_loader:
             pred = model(X)
             test_loss += loss_fn(pred, y).item()
             test_correct += torch.sum(pred.argmax(1) == y)
         test_acc = test_correct / test_size
-    print(f"Test loss:{test_loss:>.5f}, Test Accuracy:{test_acc:>.4f}")
+    print(f"Test loss:{test_loss:>.5f}, Test Accuracy:{test_acc.item():>.4f}")
+    if test_acc > best_acc:
+        state_dict['acc'] = test_acc
+        torch.save(state_dict, 'model.pth')
+
+def load_model():
+
+    model = Net()
+    checkpoint = torch.load(MODEL_WEIGHTS)
+    model.load_state_dict(checkpoint['model'])
+    # accuracy = checkpoint['acc']
+    _, test_loader = get_dataloader()
+    test(model, test_loader)
+
 
 
 if __name__ == '__main__':
@@ -92,12 +111,11 @@ if __name__ == '__main__':
 
     train_loader, test_loader = get_dataloader()
 
-
-    for epoch_i in range(EPOCH):
-        train(model, train_loader, epoch_i)
-        test(model, test_loader, epoch_i)
-
-
+    best_acc = 0.0
+    # for epoch_i in range(EPOCH):
+    #     train(model, train_loader, epoch_i)
+    #     test(model, test_loader)
+    load_model()
 
 
 
