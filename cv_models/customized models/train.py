@@ -42,7 +42,7 @@ class Net(nn.Module):
         return out
 
 
-def get_dataloader():
+def get_dataloader(shuffle=True):
     transformer = transforms.Compose([
         transforms.ToTensor(),
         transforms.Normalize((0.1307,), (0.3081,))
@@ -50,8 +50,8 @@ def get_dataloader():
     train_set = datasets.MNIST(DATA_PATH, train=True, transform=transformer, download=False)
     test_set = datasets.MNIST(DATA_PATH, train=False, transform=transformer, download=False)
 
-    train_loader = DataLoader(train_set, BATCH_SIZE, shuffle=True)
-    test_loader = DataLoader(test_set, BATCH_SIZE, shuffle=True)
+    train_loader = DataLoader(train_set, BATCH_SIZE, shuffle=shuffle)
+    test_loader = DataLoader(test_set, BATCH_SIZE, shuffle=shuffle)
 
     return train_loader, test_loader
 
