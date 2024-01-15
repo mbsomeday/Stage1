@@ -42,7 +42,7 @@ class Net(nn.Module):
         return out
 
 
-def get_dataloader(shuffle=True):
+def get_dataloader(batch_size=BATCH_SIZE, shuffle=True):
     transformer = transforms.Compose([
         transforms.ToTensor(),
         transforms.Normalize((0.1307,), (0.3081,))
@@ -50,8 +50,8 @@ def get_dataloader(shuffle=True):
     train_set = datasets.MNIST(DATA_PATH, train=True, transform=transformer, download=False)
     test_set = datasets.MNIST(DATA_PATH, train=False, transform=transformer, download=False)
 
-    train_loader = DataLoader(train_set, BATCH_SIZE, shuffle=shuffle)
-    test_loader = DataLoader(test_set, BATCH_SIZE, shuffle=shuffle)
+    train_loader = DataLoader(train_set, batch_size, shuffle=shuffle)
+    test_loader = DataLoader(test_set, batch_size, shuffle=shuffle)
 
     return train_loader, test_loader
 
@@ -68,7 +68,7 @@ def train(model, train_loader, epoch):
         cur_loss.backward()
         optimizer.step()
 
-        _, pred = torch.max(out, axis=1)
+        # _, pred = torch.max(out, axis=1)
 
         if batch_i % 100 == 0:
             print(f"Epoch:{epoch}, Batch: {batch_i}/{total_batch}, loss:{cur_loss.item():.5f}")

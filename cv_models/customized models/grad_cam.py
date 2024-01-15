@@ -84,7 +84,7 @@ model.eval()
 model.features[-1].register_forward_hook(farward_hook)
 model.features[-1].register_backward_hook(backward_hook)
 
-_, test_loader = get_dataloader(True)
+_, test_loader = get_dataloader(shuffle=True, batch_size=64)
 
 for X, y in test_loader:
     img = X[0]
