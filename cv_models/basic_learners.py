@@ -39,6 +39,11 @@ class MyNet(nn.Module):
         return x
 
 
+def get_MyNet(device, weights_path):
+    model = MyNet()
+    model.load_state_dict(torch.load(weights_path))
+    return model
+
 # ==================================== ResNet ====================================
 
 class ResNet(nn.Module):
@@ -104,7 +109,10 @@ class ResNet(nn.Module):
 
         return out
 
-
+def get_ResNet(device, weights_path):
+    model = ResNet()
+    model.load_state_dict(torch.load(weights_path))
+    return model
 # ==================================== Inception ====================================
 
 class GlobalAvgPool2d(nn.Module):
@@ -115,9 +123,9 @@ class GlobalAvgPool2d(nn.Module):
         return F.avg_pool2d(x, kernel_size=x.size()[2:])
 
 
-class Inception_Model(nn.Module):
+class Inception_Module(nn.Module):
     def __init__(self, in_c, c1, c2, c3, c4):
-        super(Inception_Model, self).__init__()
+        super(Inception_Module, self).__init__()
         self.p1 = nn.Sequential(
             nn.Conv2d(in_c, c1, 1, 1, 0),
             nn.ReLU()
@@ -160,8 +168,8 @@ class Inception(nn.Module):
             nn.ReLU(),
             nn.MaxPool2d(kernel_size=2, stride=2, padding=1),
         )
-        self.p2 = Inception_Model(128, 192, (96, 208), (16, 48), 64)
-        self.p3 = Inception_Model(512, 256, (160, 320), (32, 128), 128)
+        self.p2 = Inception_Module(128, 192, (96, 208), (16, 48), 64)
+        self.p3 = Inception_Module(512, 256, (160, 320), (32, 128), 128)
         self.glob_pool = GlobalAvgPool2d()
         self.fc = nn.Linear(832, 2)
 
@@ -173,3 +181,8 @@ class Inception(nn.Module):
         x = x.view(x.size(0), -1)
         x = self.fc(x)
         return x
+
+def get_Inception(device, weights_path):
+    model = Inception().to(device)
+    model.load_state_dict(torch.load(weights_path))
+    return model

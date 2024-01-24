@@ -4,12 +4,11 @@ from torchvision import transforms
 from torch.utils.data import DataLoader
 
 from cv_models import basic_learners
-from ensemble_models import model_ensembling
+from cv_models.ensemble_models import model_ensembling
 from utils.dataset import MyDataset
 
 
 parser = argparse.ArgumentParser(description='argparse testing')
-parser.add_argument('--epochs', type=int, default=50, required=True)
 parser.add_argument('--batch_size', type=int, default=64, required=True)
 
 parser.add_argument('--CNN_weight', type=str, required=True)
