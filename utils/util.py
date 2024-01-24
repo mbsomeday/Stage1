@@ -37,3 +37,41 @@ def calculate_label_recall(confMatrix, model_name):
         label_correct_sum = confMatrix[i][i]
         prediction = round(100 * float(label_correct_sum) / float(label_total_sum), 2)
         print(f'{model_name} recall of class {i}: {str(prediction)}%')
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

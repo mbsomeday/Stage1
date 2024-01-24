@@ -126,7 +126,7 @@ def _vgg(arch, cfg, batch_norm, pretrained, progress, device, weight_path, **kwa
 
 
 def vgg16_bn(pretrained=True, progress=True, device="cpu", weight_path=r'state_dicts\vgg16_bn.pt', **kwargs):
-    """VGG 16-layer model (configuration "D") with batch normalization
+    """VGG 16-layer model (configuration "B") with batch normalization
 
     Args:
         pretrained (bool): If True, returns a model pre-trained on ImageNet
@@ -134,9 +134,24 @@ def vgg16_bn(pretrained=True, progress=True, device="cpu", weight_path=r'state_d
     """
     return _vgg("vgg16_bn", "D", True, pretrained, progress, device, weight_path, **kwargs)
 
+def vgg13_bn(pretrained=False, progress=True, device="cpu", weight_path=None, **kwargs):
+    """VGG 13-layer model (configuration "D") with batch normalization
+
+    Args:
+        pretrained (bool): If True, returns a model pre-trained on ImageNet
+        progress (bool): If True, displays a progress bar of the download to stderr
+    """
+    return _vgg("vgg13_bn", "B", True, pretrained, progress, device, weight_path, **kwargs)
 
 
+def vgg11_bn(pretrained=False, progress=True, device="cpu", weight_path=None, **kwargs):
+    """VGG 11-layer model (configuration "D") with batch normalization
 
+    Args:
+        pretrained (bool): If True, returns a model pre-trained on ImageNet
+        progress (bool): If True, displays a progress bar of the download to stderr
+    """
+    return _vgg("vgg11_bn", "A", True, pretrained, progress, device, weight_path, **kwargs)
 
 
 
