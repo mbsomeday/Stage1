@@ -12,8 +12,16 @@ def main(args):
     BASE_DIR = r'images'
     TXT_DIR = r'/content/drive/MyDrive/ColabNotebooks/data/dataset_txt'
 
-    model = basic_learners.MyNet().to(device)
+    device = 'cuda' if torch.cuda.is_available() else 'cpu'
+
+    func_dict = {"MyNet": basic_learners.MyNet,
+                 "Inception": basic_learners.Inception,
+                 "ResNet": basic_learners.ResNet
+                 }
+
     model_name = args.model_name
+
+    model = func_dict.get(model_name)().to(device)
 
     loss_fn = torch.nn.CrossEntropyLoss()
     optimizer = torch.optim.SGD(model.parameters(), lr=0.01, momentum=0.9)
@@ -112,13 +120,11 @@ def main(args):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='argparse testing')
-    parser.add_argument('--model_name', type=str, default="Model", required=True)
+    parser.add_argument('--model_name', type=str,  choices=['MyNet', 'Inception', 'ResNet'], default="Model", required=True)
     parser.add_argument('--epochs', type=int, default=50, required=True)
     parser.add_argument('--batch_size', type=int, default=64, required=True)
     parser.add_argument('--weight_save_path', type=str, required=True)
 
     args = parser.parse_args()
-
-    device = "cuda" if torch.cuda.is_available() else "cpu"
 
     main(args)
