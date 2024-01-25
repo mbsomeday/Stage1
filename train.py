@@ -13,7 +13,7 @@ def main(args):
     TXT_DIR = r'/content/drive/MyDrive/ColabNotebooks/data/dataset_txt'
 
     model = basic_learners.MyNet().to(device)
-    model_name = args.name
+    model_name = args.model_name
 
     loss_fn = torch.nn.CrossEntropyLoss()
     optimizer = torch.optim.SGD(model.parameters(), lr=0.01, momentum=0.9)
@@ -118,7 +118,6 @@ if __name__ == '__main__':
     parser.add_argument('--weight_save_path', type=str, required=True)
 
     args = parser.parse_args()
-    print(args.name)
 
     device = "cuda" if torch.cuda.is_available() else "cpu"
 

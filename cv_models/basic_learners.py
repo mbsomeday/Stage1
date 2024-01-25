@@ -39,9 +39,11 @@ class MyNet(nn.Module):
         return x
 
 
-def get_MyNet(device, weights_path):
+def get_MyNet(device, pretrained=False, weights_path=None):
     model = MyNet()
-    model.load_state_dict(torch.load(weights_path))
+    if pretrained:
+        model.load_state_dict(torch.load(weights_path, map_location=torch.device(device)))
+        print('Loaded pretrained CNN.')
     return model
 
 # ==================================== ResNet ====================================
@@ -109,9 +111,11 @@ class ResNet(nn.Module):
 
         return out
 
-def get_ResNet(device, weights_path):
+def get_ResNet(device, pretrained=False, weights_path=None):
     model = ResNet()
-    model.load_state_dict(torch.load(weights_path))
+    if pretrained:
+        model.load_state_dict(torch.load(weights_path, map_location=torch.device(device)))
+        print('Loaded pretrained ResNet')
     return model
 # ==================================== Inception ====================================
 
@@ -182,7 +186,10 @@ class Inception(nn.Module):
         x = self.fc(x)
         return x
 
-def get_Inception(device, weights_path):
+
+def get_Inception(device, pretrained=False, weights_path=None):
     model = Inception().to(device)
-    model.load_state_dict(torch.load(weights_path))
+    if pretrained:
+        model.load_state_dict(torch.load(weights_path, map_location=torch.device(device)))
+        print('Loaded pretrained Inception')
     return model

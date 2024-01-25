@@ -76,7 +76,9 @@ def evaluate_one_model(model, test_loader, test_dataset, device):
 
 def image_filter(image_dir, txt_path):
     '''
-        将EuroCity Pedestrian Dataset中，宽高比在[0.4, 0.6]之间的pedestrian记录下来
+        将EuroCity Pedestrian Dataset中，宽高比在[0.4, 0.6]之间，且原像素在
+        的pedestrian记录下来
+
     Args:
         image_dir: EuroCity Pedestrian Dataset/Pedestrian
     '''
@@ -90,8 +92,9 @@ def image_filter(image_dir, txt_path):
     for image_path in tqdm(image_list):
         image = Image.open(image_path)
         w, h = image.size
+        resolution = w * h
         ratio = w / h
-        if ratio > ration_min and ratio < ration_max:
+        if ratio > ration_min and ratio < ration_max and resolution <= 1500:
             image_for_test.append(image_path)
     # 将符合条件的image_path存储到txt文件中
     with open(txt_path, 'w') as f:
@@ -101,11 +104,8 @@ def image_filter(image_dir, txt_path):
 
 
 if __name__ == '__main__':
-    from cv_models import basic_learners
-
-    device = 'cuda' if torch.cuda.is_available() else 'cpu'
-    model = basic_learners.get_MyNet(device)
-
+    image_filter(image_dir=r'D:\chrom_download\grouped_ECP\pedestrian',
+                 txt_path=r'ECP_test.txt')
 
 
 

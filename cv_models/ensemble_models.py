@@ -1,5 +1,6 @@
 import torch
 import numpy as np
+from tqdm import tqdm
 
 from cv_models import basic_learners
 
@@ -33,7 +34,7 @@ def hard_voting(model_list, images):
 
 def model_ensembling(model_list, test_loader, test_dataset):
     num_correct = 0
-    for data in test_loader:
+    for data in tqdm(test_loader):
         images, labels = data
         images = images.to(device)
         labels = labels.to(device)
@@ -43,7 +44,9 @@ def model_ensembling(model_list, test_loader, test_dataset):
         num_correct += (out == labels).sum()
 
     test_accuracy = num_correct / len(test_dataset)
-    print('Voting test accuracy:', test_accuracy)
+    print('num_correct:', num_correct)
+    print('total testing examples:', len(test_dataset))
+    print('Hard voting test accuracy:', test_accuracy)
 
 
 
