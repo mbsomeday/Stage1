@@ -1,4 +1,6 @@
 # 定义 Dataset
+import argparse
+
 import torch
 from torch.utils.data import Dataset, DataLoader
 from PIL import Image
@@ -77,10 +79,26 @@ def image_process():
     return image_transform
 
 
+def get_dataloader(args):
+    img_transformer = transforms.Compose([
+        transforms.ToTensor()
+    ])
+    base_dir = args.image_dir
+    txt_dir = args.txt_dir
+    type = args.type
+    txt_name = str(type) + '.txt'
+
+    ret_dataset = MyDataset(base_dir=base_dir, txt_dir=txt_dir, txt_name=txt_name, transform=img_transformer)
+    ret_loader = DataLoader(dataset=ret_dataset, batch_size=64, shuffle=True)
+
+    return ret_dataset, ret_loader
 
 
-
-
+if __name__ == '__main__':
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--image_dir', type=str, required=True)
+    parser.add_argument('--txt_dir', type=str, required=True, help='dir path that save image split .txt')
+    parser.add_argument('--type', type=str, choices=['train', 'test', 'val'], required=True)
 
 
 
