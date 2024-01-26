@@ -7,7 +7,13 @@ import os
 from diversity import ensemble_models
 from cv_models import basic_learners
 from utils.dataset import MyDataset
+from utils import dataset
 
+
+func_dict = {"MyNet": basic_learners.MyNet,
+             "Inception": basic_learners.Inception,
+             "ResNet": basic_learners.ResNet
+             }
 
 def ensemble_test(args):
     BASE_DIR = r'images'
@@ -47,14 +53,37 @@ def ensemble_test(args):
         test_accuracy = num_correct / len(test_dataset)
         print('Test accuracy:{:.10f}'.format(test_accuracy))
 
+def test_single_model(args):
+
+    device = 'cuda' if torch.cuda.is_available() else 'cpu'
+
+    model_name = args.model_name
+
+    model = func_dict.get(model_name)().to(device)
+
+    test_dataset, test_loader = dataset.get_dataloader(args)
+    model.eval()
+    num_correct = 0
+    with torch.no_grad():
+        for data in test_loader:
+            images, labels = data
+            images = images.to(device)
+            labels = labels.to(device)
+            out = model(images)
+            _, pred = torch.max(out, 1)
+            num_correct += (pred == labels).sum()
+
+        test_accuracy = num_correct / len(test_dataset)
+        print(f'{model_name} accuracy is "{test_accuracy:.10f}')
+
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='argparse testing')
-    parser.add_argument('--weight_path', type=str, required=True, help='change weight path in code')
-
+    parser.add_argument('--model_name', type=str,  choices=['MyNet', 'Inception', 'ResNet'], default="Model", required=True)
+    parser.add_argument('--image_dir', type=str, required=True)
     args = parser.parse_args()
 
-    ensemble_test(args)
+    test_single_model(args)
 
 
 

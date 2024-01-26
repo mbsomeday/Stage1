@@ -79,18 +79,45 @@ def image_process():
     return image_transform
 
 
+class dataset_for_Daimler(Dataset):
+    def __init__(self, image_dir, transform):
+        super(dataset_for_Daimler).__init__()
+        self.image_dir = image_dir
+        self.images = [os.path.join(self.image_dir, image) for image in os.listdir(self.image_dir)]
+        self.transform = transform
+
+    def __len__(self):
+        return len(self.images)
+
+    def __getitem__(self, item):
+        img = self.images[item]
+        label = 1
+        img = Image.open(img)  # PIL image shape:（C, W, H）
+        if self.transform is not None:
+            img = self.transform(img)
+
+        label = np.array(label).astype(np.int64)
+        label = torch.from_numpy(label)
+        return img, label
+
+
+
 def get_dataloader(args):
+
     img_transformer = transforms.Compose([
+        transforms.Resize((36, 18)),   # (h, w)
+        transforms.Grayscale(num_output_channels=1),
         transforms.ToTensor()
     ])
-    base_dir = args.image_dir
-    txt_dir = args.txt_dir
-    type = args.type
-    txt_name = str(type) + '.txt'
 
-    ret_dataset = MyDataset(base_dir=base_dir, txt_dir=txt_dir, txt_name=txt_name, transform=img_transformer)
+    # base_dir = args.image_dir
+    # txt_dir = args.txt_dir
+    # type = args.type
+    # txt_name = str(type) + '.txt'
+    image_dir = args.image_dir
+
+    ret_dataset = dataset_for_Daimler(image_dir, transform=img_transformer)
     ret_loader = DataLoader(dataset=ret_dataset, batch_size=64, shuffle=True)
-
     return ret_dataset, ret_loader
 
 

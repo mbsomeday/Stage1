@@ -11,7 +11,6 @@ import argparse
 from cv_models import basic_learners
 from utils import dataset
 
-
 device = 'cuda' if torch.cuda.is_available() else 'cpu'
 
 func_dict = {"MyNet": basic_learners.get_MyNet,
@@ -37,7 +36,7 @@ def get_cm(args):
     y_true = []
 
     with torch.no_grad():
-        for images, labels in test_loader:
+        for images, labels in tqdm(test_loader):
             images = images.to(device)
             labels = labels.to(device)
 
@@ -49,6 +48,7 @@ def get_cm(args):
 
     cm = confusion_matrix(y_true, y_pred)
     pd.DataFrame(cm).to_csv(write_to_file, index=False, header=False)
+    print(f'Write confution metrics of {model_name} to {write_to_file}!')
     return cm
 
 
@@ -64,8 +64,7 @@ def calculate_label_recall(confMatrix, model_name):
 
 
 def temp_Veen():
-
-    data_list = [{1,2,3},{1,2,4}]
+    data_list = [{1, 2, 3}, {1, 2, 4}]
     m1_right_cases = {'a.pgm', 'b.pgm', 'c1.pgm'}
     m2_right_cases = {'a.pgm', 'b2.pgm', 'c.pgm'}
     m3_right_cases = {'a1.pgm', 'b.pgm', 'c1.pgm'}
@@ -73,11 +72,11 @@ def temp_Veen():
     my_dpi = 150
     plt.figure(figsize=(600 / my_dpi, 600 / my_dpi), dpi=my_dpi)  # 控制图尺寸的同时，使图高分辨率（高清）显示
     g = matplotlib_venn.venn3(subsets=[m1_right_cases, m2_right_cases, m3_right_cases],  # 传入三组数据
-              set_labels=('Label 1', 'Label 2', 'Label 3'),  # 设置组名
-              set_colors=("#01a2d9", "#31A354", "#c72e29"),  # 设置圈的颜色，中间颜色不能修改
-              alpha=0.8,  # 透明度
-              normalize_to=1.0,  # venn图占据figure的比例，1.0为占满
-              )
+                              set_labels=('Label 1', 'Label 2', 'Label 3'),  # 设置组名
+                              set_colors=("#01a2d9", "#31A354", "#c72e29"),  # 设置圈的颜色，中间颜色不能修改
+                              alpha=0.8,  # 透明度
+                              normalize_to=1.0,  # venn图占据figure的比例，1.0为占满
+                              )
     plt.show()
 
 
@@ -121,12 +120,32 @@ def image_filter(image_dir, txt_path):
     return image_for_test
 
 
-def calc_risk():
-    pass
+def get_risk(csv_path):
+    '''
+    此risk计算公式有待调整
+    Args:
+        csv_path:
+
+    Returns:
+
+    '''
+    data = pd.read_csv(csv_path, header=None)
+    FP = data.iloc[0, 1]
+    FN = data.iloc[1, 0]
+
+    sum1 = data.iloc[0, :].sum()
+    sum2 = data.iloc[1, :].sum()
+    total = sum1 + sum2
+
+    risk = 1.0 * FN / total + 0.5 * FP / total
+
+    return risk
+
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='argparse')
-    parser.add_argument('--model_name', type=str,  choices=['MyNet', 'Inception', 'ResNet'], default="Model", required=True)
+    parser.add_argument('--model_name', type=str, choices=['MyNet', 'Inception', 'ResNet'], default="Model",
+                        required=True)
     parser.add_argument('--weight_path', type=str, required=True)
     parser.add_argument('--write_to_file', type=str, required=True)
     parser.add_argument('--image_dir', type=str, required=True)
@@ -136,14 +155,3 @@ if __name__ == '__main__':
     args = parser.parse_args()
 
     get_cm(args)
-
-
-
-
-
-
-
-
-
-
-
