@@ -2,6 +2,8 @@ from torch import nn
 import torch.nn.functional as F
 import torch
 
+from cv_models import DEVICE
+
 
 # ==================================== CNN network ====================================
 
@@ -39,11 +41,13 @@ class MyNet(nn.Module):
         return x
 
 
-def get_MyNet(device, pretrained=False, weights_path=None):
-    model = MyNet()
+def get_MyNet(pretrained=False, weights_path=None):
+    model = MyNet().to(DEVICE)
     if pretrained:
-        model.load_state_dict(torch.load(weights_path, map_location=torch.device(device)))
+        model.load_state_dict(torch.load(weights_path, map_location=torch.device(DEVICE)))
         print('Loaded pretrained CNN.')
+    else:
+        print('Loaded un-pretrained CNN.')
     return model
 
 # ==================================== ResNet ====================================
@@ -111,11 +115,13 @@ class ResNet(nn.Module):
 
         return out
 
-def get_ResNet(device, pretrained=False, weights_path=None):
-    model = ResNet()
+def get_ResNet(pretrained=False, weights_path=None):
+    model = ResNet().to(DEVICE)
     if pretrained:
-        model.load_state_dict(torch.load(weights_path, map_location=torch.device(device)))
-        print('Loaded pretrained ResNet')
+        model.load_state_dict(torch.load(weights_path, map_location=torch.device(DEVICE)))
+        print('Loaded pretrained ResNet.')
+    else:
+        print('Loaded un-pretrained ResNet.')
     return model
 # ==================================== Inception ====================================
 
@@ -187,9 +193,11 @@ class Inception(nn.Module):
         return x
 
 
-def get_Inception(device, pretrained=False, weights_path=None):
-    model = Inception().to(device)
+def get_Inception(pretrained=False, weights_path=None):
+    model = Inception().to(DEVICE)
     if pretrained:
-        model.load_state_dict(torch.load(weights_path, map_location=torch.device(device)))
-        print('Loaded pretrained Inception')
+        model.load_state_dict(torch.load(weights_path, map_location=torch.device(DEVICE)))
+        print('Loaded pretrained Inception.')
+    else:
+        print('Loaded un-pretrained Inception.')
     return model
