@@ -60,12 +60,13 @@ def test_single_model(args):
     Inception_weight = args.Inception_weight
 
     if is_ensemble:
-        model1 = MODEL_DICT.get('MyNet')(pretrained=True, weights_path=MyNet_weight)
-        model2 = MODEL_DICT.get('ResNet')(pretrained=True, weights_path=ResNet_weight)
-        model3 = MODEL_DICT.get('Inception')(pretrained=True, weights_path=Inception_weight)
+        model1 = basic_learners.get_model('CNN', pretrained=True, weights_path=MyNet_weight)
+        model2 = basic_learners.get_model('ResNet', pretrained=True, weights_path=ResNet_weight)
+        model3 = basic_learners.get_model('Inception', pretrained=True, weights_path=Inception_weight)
+
         model_list = [model1,model2, model3]
     else:
-        model = MODEL_DICT.get(model_name)(pretrained=True, weights_path=weights_path)
+        model = basic_learners.get_model(model_name, pretrained=True, weights_path=weights_path)
         model.eval()
 
     test_dataset, test_loader = dataset.get_dataloader(args)
@@ -89,7 +90,7 @@ def test_single_model(args):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='argparse testing')
-    parser.add_argument('--model_name', type=str,  choices=['MyNet', 'Inception', 'ResNet'], default="Model", required=True)
+    parser.add_argument('--model_name', type=str,  choices=['CNN', 'Inception', 'ResNet'], default="Model", required=True)
     parser.add_argument('--image_dir', type=str, required=True)
     parser.add_argument('--weighs_path', type=str, required=True)
     parser.add_argument('--is_ensemble', type=bool, required=True)

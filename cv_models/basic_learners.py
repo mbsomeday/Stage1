@@ -4,6 +4,7 @@ import torch
 
 from cv_models import DEVICE
 
+
 # ==================================== CNN network ====================================
 
 
@@ -40,15 +41,6 @@ class MyNet(nn.Module):
         x = self.classifier(x)
         return x
 
-
-def get_MyNet(pretrained=False, weights_path=None):
-    model = MyNet().to(DEVICE)
-    if pretrained:
-        model.load_state_dict(torch.load(weights_path, map_location=torch.device(DEVICE)))
-        print('Loaded pretrained CNN.')
-    else:
-        print('Loaded un-pretrained CNN.')
-    return model
 
 # ==================================== ResNet ====================================
 
@@ -115,14 +107,7 @@ class ResNet(nn.Module):
 
         return out
 
-def get_ResNet(pretrained=False, weights_path=None):
-    model = ResNet().to(DEVICE)
-    if pretrained:
-        model.load_state_dict(torch.load(weights_path, map_location=torch.device(DEVICE)))
-        print('Loaded pretrained ResNet.')
-    else:
-        print('Loaded un-pretrained ResNet.')
-    return model
+
 # ==================================== Inception ====================================
 
 class GlobalAvgPool2d(nn.Module):
@@ -193,16 +178,6 @@ class Inception(nn.Module):
         return x
 
 
-def get_Inception(pretrained=False, weights_path=None):
-    model = Inception().to(DEVICE)
-    if pretrained:
-        model.load_state_dict(torch.load(weights_path, map_location=torch.device(DEVICE)))
-        print('Loaded pretrained Inception.')
-    else:
-        print('Loaded un-pretrained Inception.')
-    return model
-
-
 # ==================================== 定义模型字典 ====================================
 
 MODEL_NAME = {
@@ -213,30 +188,10 @@ MODEL_NAME = {
 
 
 def get_model(model_name, pretrained=False, weights_path=None):
-
-    model = MODEL_NAME.get(model_name)
+    model = MODEL_NAME.get(model_name)().to(DEVICE)
     if pretrained:
         model.load_state_dict(torch.load(weights_path, map_location=torch.device(DEVICE)))
-        print(f'Loaded pretrained {model_name}.')
+        print(f'Loaded pretrained {model_name} successfully!')
     else:
-        print(f'Loaded un-pretrained {model_name}.')
+        print(f'Loaded un-pretrained {model_name} successfully!')
     return model
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

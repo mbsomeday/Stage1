@@ -8,26 +8,19 @@ import os
 from tqdm import tqdm
 import argparse
 
-from cv_models import basic_learners
+from cv_models import MODEL_DICT, DEVICE
 from utils import dataset
-
-device = 'cuda' if torch.cuda.is_available() else 'cpu'
-
-func_dict = {"MyNet": basic_learners.get_MyNet,
-             "Inception": basic_learners.get_Inception,
-             "ResNet": basic_learners.get_ResNet
-             }
 
 
 # 获取混淆矩阵并保存
 def get_cm(args):
-    device = 'cuda' if torch.cuda.is_available() else 'cpu'
 
     model_name = args.model_name
+    dataset_name = args.dataset_name
     weight_path = args.weight_path
     write_to_file = args.write_to_file
 
-    model = func_dict.get(model_name)(device, pretrained=True, weights_path=weight_path)
+    model = MODEL_DICT.get(model_name)(pretrained=True, weights_path=weight_path)
     _, test_loader = dataset.get_dataloader(args)
 
     model.eval()
@@ -37,8 +30,8 @@ def get_cm(args):
 
     with torch.no_grad():
         for images, labels in tqdm(test_loader):
-            images = images.to(device)
-            labels = labels.to(device)
+            images = images.to(DEVICE)
+            labels = labels.to(DEVICE)
 
             outputs = model(images)
             _, predicted = torch.max(outputs.data, 1)
@@ -48,7 +41,7 @@ def get_cm(args):
 
     cm = confusion_matrix(y_true, y_pred)
     pd.DataFrame(cm).to_csv(write_to_file, index=False, header=False)
-    print(f'Write confution metrics of {model_name} to {write_to_file}!')
+    print(f'Write confution metrics of {model_name} on {dataset_name} to {write_to_file}!')
     return cm
 
 
@@ -80,8 +73,8 @@ def temp_Veen():
     plt.show()
 
 
-def evaluate_one_model(model, test_loader, test_dataset, device):
-    model.to(device)
+def evaluate_one_model(model, test_loader, test_dataset):
+    model.to(DEVICE)
     out_list = []
     model.eval()
     with torch.no_grad():

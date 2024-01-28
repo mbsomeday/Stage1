@@ -3,9 +3,7 @@ import numpy as np
 from tqdm import tqdm
 import torch.nn.functional as F
 
-from cv_models import basic_learners
-
-device = 'cuda' if torch.cuda.is_available() else 'cpu'
+from cv_models import DEVICE, basic_learners
 
 
 def hard_voting(model_list, images):
@@ -50,9 +48,9 @@ if __name__ == '__main__':
     print('-' * 30 + 'ensemble models' + '-' * 30)
     torch.manual_seed(13)
 
-    model1 = basic_learners.MyNet()
-    model2 = basic_learners.ResNet()
-    model3 = basic_learners.Inception()
+    model1 = basic_learners.get_model('CNN', pretrained=False)
+    model2 = basic_learners.get_model('ResNet')
+    model3 = basic_learners.get_model('Inception')
 
     model_list = [model1, model2, model3]
     images = torch.rand(size=(5, 1, 36, 18))

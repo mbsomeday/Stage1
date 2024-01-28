@@ -12,8 +12,9 @@ if __name__ == '__main__':
     args = parser.parse_args()
     model_name = args.model_name
     pretrained = args.pretrained
-    print('pretrained', pretrained)
+    print('pretrained:', pretrained)
     basic_learners.get_model(model_name, pretrained)
+
 
 
 
