@@ -42,6 +42,7 @@ class MyDataset(Dataset):
         label = torch.from_numpy(label)
         return img, label
 
+
 class Dataset_for_ECPD(Dataset):
     def __init__(self, image_dir, txt_path, transform=None):
         self.root = image_dir
@@ -57,6 +58,7 @@ class Dataset_for_ECPD(Dataset):
         self.images = images
         self.labels = labels
         self.transform = transform
+
     def __len__(self):
         return len(self.labels)
 
@@ -70,13 +72,25 @@ class Dataset_for_ECPD(Dataset):
         label = torch.from_numpy(label)
         return img, label
 
-def image_process():
-    image_transform = transforms.Compose([
-        transforms.RandomHorizontalFlip(p=0.5), # 水平翻转
-        transforms.ColorJitter(brightness=0.5, contrast=0.5, saturation=0.5, hue=0.2),
-        transforms.ToTensor()
-    ])
+
+def get_image_transform(mode):
+    if mode == 1:
+        image_transform = transforms.Compose([
+            transforms.ToTensor()
+        ])
+    elif mode == 2:
+        image_transform = transforms.Compose([
+            transforms.RandomHorizontalFlip(p=1),  # 水平翻转
+            transforms.ColorJitter(brightness=0.5, contrast=0.5, saturation=0.5, hue=0.2),
+            transforms.ToTensor()
+        ])
+    else:
+        image_transform = transforms.Compose([
+            transforms.RandomHorizontalFlip(p=0.5),  # 水平翻转
+            transforms.ToTensor()
+        ])
     return image_transform
+
 
 
 class dataset_for_Daimler(Dataset):
@@ -101,23 +115,12 @@ class dataset_for_Daimler(Dataset):
         return img, label
 
 
+def get_dataloader(image_dir, txt_dir, txt_name, transformer_mode):
 
-def get_dataloader(args):
-
-    img_transformer = transforms.Compose([
-        transforms.Resize((36, 18)),   # (h, w)
-        transforms.Grayscale(num_output_channels=1),
-        transforms.ToTensor()
-    ])
-
-    # base_dir = args.image_dir
-    # txt_dir = args.txt_dir
-    # type = args.type
-    # txt_name = str(type) + '.txt'
-    image_dir = args.image_dir
-
-    ret_dataset = dataset_for_Daimler(image_dir, transform=img_transformer)
+    img_transformer = get_image_transform(transformer_mode)
+    ret_dataset = MyDataset(base_dir=image_dir, txt_dir=txt_dir, txt_name=txt_name, transform=img_transformer)
     ret_loader = DataLoader(dataset=ret_dataset, batch_size=64, shuffle=True)
+
     return ret_dataset, ret_loader
 
 
@@ -126,11 +129,3 @@ if __name__ == '__main__':
     parser.add_argument('--image_dir', type=str, required=True)
     parser.add_argument('--txt_dir', type=str, required=True, help='dir path that save image split .txt')
     parser.add_argument('--type', type=str, choices=['train', 'test', 'val'], required=True)
-
-
-
-
-
-
-
-

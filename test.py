@@ -5,7 +5,7 @@ from torch.utils.data import DataLoader
 import os
 
 from diversity import ensemble_models
-from cv_models import basic_learners, DEVICE, MODEL_DICT
+from cv_models import basic_learners, DEVICE
 from utils.dataset import MyDataset
 from utils import dataset
 
@@ -51,7 +51,7 @@ def ensemble_test(args):
         print('Test accuracy:{:.10f}'.format(test_accuracy))
 
 
-def test_single_model(args):
+def test_model_args(args):
     model_name = args.model_name
     weights_path = args.weights_path
     is_ensemble = args.is_ensemble
@@ -87,6 +87,22 @@ def test_single_model(args):
         test_accuracy = num_correct / len(test_dataset)
         print(f'{model_name} accuracy is "{test_accuracy:.10f}')
 
+def test_model(model, test_dataset, test_loader):
+    model.eval()
+    num_correct = 0
+    with torch.no_grad():
+        for data in test_loader:
+            images, labels = data
+            images = images.to(DEVICE)
+            labels = labels.to(DEVICE)
+            out = model(images)
+            _, pred = torch.max(out, 1)
+            num_correct += (pred == labels).sum()
+            # print(pred != labels)
+
+        test_accuracy = num_correct / len(test_dataset)
+        print(f'Model accuracy is "{test_accuracy:.10f}')
+
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='argparse testing')
@@ -101,6 +117,9 @@ if __name__ == '__main__':
     args = parser.parse_args()
 
     test_single_model(args)
+
+    # 将3个模型在新数据集上的结果保存为txt
+
 
 
 

@@ -44,6 +44,8 @@ def soft_voting(model_list, images):
     return soft_res
 
 
+
+
 if __name__ == '__main__':
     print('-' * 30 + 'ensemble models' + '-' * 30)
     torch.manual_seed(13)
