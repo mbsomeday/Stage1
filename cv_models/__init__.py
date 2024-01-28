@@ -8,3 +8,4 @@ MODEL_DICT = {"MyNet": basic_learners.get_MyNet,
               }
 
 DEVICE = 'cuda' if torch.cuda.is_available() else 'cpu'
+
