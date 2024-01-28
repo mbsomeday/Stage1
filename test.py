@@ -5,15 +5,10 @@ from torch.utils.data import DataLoader
 import os
 
 from diversity import ensemble_models
-from cv_models import basic_learners
+from cv_models import basic_learners, DEVICE, MODEL_DICT
 from utils.dataset import MyDataset
 from utils import dataset
 
-
-func_dict = {"MyNet": basic_learners.MyNet,
-             "Inception": basic_learners.Inception,
-             "ResNet": basic_learners.ResNet
-             }
 
 def ensemble_test(args):
     BASE_DIR = r'images'
@@ -31,6 +26,8 @@ def ensemble_test(args):
     model_list = [model1, model2, model3]
 
     img_transformer = transforms.Compose([
+        # transforms.Resize((36, 18)),   # (h, w)
+        # transforms.Grayscale(num_output_channels=1),
         transforms.ToTensor()
     ])
     test_dataset = MyDataset(base_dir=BASE_DIR, txt_dir=TXT_DIR, txt_name='test.txt', transform=img_transformer)
@@ -53,23 +50,36 @@ def ensemble_test(args):
         test_accuracy = num_correct / len(test_dataset)
         print('Test accuracy:{:.10f}'.format(test_accuracy))
 
+
 def test_single_model(args):
-
-    device = 'cuda' if torch.cuda.is_available() else 'cpu'
-
     model_name = args.model_name
+    weights_path = args.weights_path
+    is_ensemble = args.is_ensemble
+    MyNet_weight = args.MyNet_weight
+    ResNet_weight = args.ResNet_weight
+    Inception_weight = args.Inception_weight
 
-    model = func_dict.get(model_name)().to(device)
+    if is_ensemble:
+        model1 = MODEL_DICT.get('MyNet')(pretrained=True, weights_path=MyNet_weight)
+        model2 = MODEL_DICT.get('ResNet')(pretrained=True, weights_path=ResNet_weight)
+        model3 = MODEL_DICT.get('Inception')(pretrained=True, weights_path=Inception_weight)
+        model_list = [model1,model2, model3]
+    else:
+        model = MODEL_DICT.get(model_name)(pretrained=True, weights_path=weights_path)
+        model.eval()
 
     test_dataset, test_loader = dataset.get_dataloader(args)
-    model.eval()
+
     num_correct = 0
     with torch.no_grad():
         for data in test_loader:
             images, labels = data
-            images = images.to(device)
-            labels = labels.to(device)
-            out = model(images)
+            images = images.to(DEVICE)
+            labels = labels.to(DEVICE)
+            if not is_ensemble:
+                out = model(images)
+            else:
+                out = ensemble_models.soft_voting(model_list=model_list, images=images)
             _, pred = torch.max(out, 1)
             num_correct += (pred == labels).sum()
 
@@ -81,9 +91,16 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='argparse testing')
     parser.add_argument('--model_name', type=str,  choices=['MyNet', 'Inception', 'ResNet'], default="Model", required=True)
     parser.add_argument('--image_dir', type=str, required=True)
+    parser.add_argument('--weighs_path', type=str, required=True)
+    parser.add_argument('--is_ensemble', type=bool, required=True)
+    parser.add_argument('--MyNet_weight', type=str, required=False)
+    parser.add_argument('--ResNet_weight', type=str, required=False)
+    parser.add_argument('--Inception_weight', type=str, required=False)
+
     args = parser.parse_args()
 
     test_single_model(args)
+
 
 
 

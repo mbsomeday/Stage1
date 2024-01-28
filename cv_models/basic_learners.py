@@ -4,8 +4,8 @@ import torch
 
 from cv_models import DEVICE
 
-
 # ==================================== CNN network ====================================
+
 
 class MyNet(nn.Module):
     '''
@@ -201,3 +201,42 @@ def get_Inception(pretrained=False, weights_path=None):
     else:
         print('Loaded un-pretrained Inception.')
     return model
+
+
+# ==================================== 定义模型字典 ====================================
+
+MODEL_NAME = {
+    "CNN": MyNet,
+    "Inception": Inception,
+    "ResNet": ResNet
+}
+
+
+def get_model(model_name, pretrained=False, weights_path=None):
+
+    model = MODEL_NAME.get(model_name)
+    if pretrained:
+        model.load_state_dict(torch.load(weights_path, map_location=torch.device(DEVICE)))
+        print(f'Loaded pretrained {model_name}.')
+    else:
+        print(f'Loaded un-pretrained {model_name}.')
+    return model
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
