@@ -1,12 +1,28 @@
 # 定义 Dataset
 import argparse
-
 import torch
 from torch.utils.data import Dataset, DataLoader
 from PIL import Image
 import numpy as np
 import os
 from torchvision import transforms
+
+
+class Fake_dataset(Dataset):
+    def __init__(self, total_num=500):
+        super(Fake_dataset).__init__()
+        self.images = torch.rand(size=(total_num, 1, 36, 18))
+        self.labels = []
+        for i in range(total_num):
+            self.labels.append(1)
+    def __len__(self):
+        return len(self.labels)
+
+    def __getitem__(self, idx):
+        img = self.images[idx]
+        label = self.labels[idx]
+        label = np.array(label).astype(np.int64)
+        return img, label
 
 
 class MyDataset(Dataset):
@@ -92,7 +108,6 @@ def get_image_transform(mode):
     return image_transform
 
 
-
 class dataset_for_Daimler(Dataset):
     def __init__(self, image_dir, transform):
         super(dataset_for_Daimler).__init__()
@@ -116,7 +131,6 @@ class dataset_for_Daimler(Dataset):
 
 
 def get_dataloader(image_dir, txt_dir, txt_name, transformer_mode):
-
     img_transformer = get_image_transform(transformer_mode)
     ret_dataset = MyDataset(base_dir=image_dir, txt_dir=txt_dir, txt_name=txt_name, transform=img_transformer)
     ret_loader = DataLoader(dataset=ret_dataset, batch_size=64, shuffle=False, drop_last=False)
