@@ -90,17 +90,34 @@ def test_model_args(args):
 def test_model(model, test_dataset, test_loader):
     model.eval()
     num_correct = 0
+    hard_examples = []
     with torch.no_grad():
-        for data in test_loader:
-            images, labels = data
+        for index, data in enumerate(test_loader):
+            images, labels, image_names = data
             images = images.to(DEVICE)
             labels = labels.to(DEVICE)
             out = model(images)
             _, pred = torch.max(out, 1)
             num_correct += (pred == labels).sum()
             # print(pred != labels)
+            all_index = torch.arange(start=0, end=(images.shape[0]))
+            wrong_idx = all_index[pred != labels]
+            # print('wrong idx:', wrong_idx)
+            wrongCase_labels = labels[wrong_idx]
+            # print('wrongCase_labels:', wrongCase_labels)
+            wrong_out = out[wrong_idx]
+            # print('wrong_out:', wrong_out)
+            for w_idx in wrong_idx:
+                wrongCase_info = image_names[w_idx] + ' ' + str(out[w_idx]) + ' ' + str(labels[w_idx].item())
+                hard_examples.append(wrongCase_info)
+            # print('hard_examples:', hard_examples)
 
         test_accuracy = num_correct / len(test_dataset)
+
+        with open('CNN_wrongCase.txt', 'w') as f:
+            for item in hard_examples:
+                f.write(item + '\n')
+        print(len(hard_examples))
         print(f'Model accuracy is "{test_accuracy:.10f}')
 
 

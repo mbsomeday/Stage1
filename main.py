@@ -10,6 +10,10 @@ if __name__ == '__main__':
     parser.add_argument('--model_name', type=str, choices=["CNN", "Inception", "ResNet"], required=True)
     parser.add_argument('--pretrained', type=bool)
     parser.add_argument('--weights_path', type=str, required=False)
+    parser.add_argument('--image_dir', type=str, required=True)
+    parser.add_argument('--txt_dir', type=str, required=True)
+    parser.add_argument('--txt_name', type=str, choices=['train.txt', 'val.txt', 'test.txt'], required=True)
+
 
     args = parser.parse_args()
     model_name = args.model_name

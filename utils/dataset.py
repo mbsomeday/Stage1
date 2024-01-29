@@ -119,7 +119,7 @@ def get_dataloader(image_dir, txt_dir, txt_name, transformer_mode):
 
     img_transformer = get_image_transform(transformer_mode)
     ret_dataset = MyDataset(base_dir=image_dir, txt_dir=txt_dir, txt_name=txt_name, transform=img_transformer)
-    ret_loader = DataLoader(dataset=ret_dataset, batch_size=64, shuffle=True)
+    ret_loader = DataLoader(dataset=ret_dataset, batch_size=64, shuffle=False)
 
     return ret_dataset, ret_loader
 
