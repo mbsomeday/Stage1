@@ -31,10 +31,11 @@ def test_model(test_dataset, test_loader, model, model_name, is_ensemble=False, 
             images = images.to(DEVICE)
             labels = labels.to(DEVICE)
             if is_ensemble:
-                out = ensemble_models.hard_voting(model_list=model, images=images)
                 if ensemble_type == 'soft':
+                    out = ensemble_models.single_input_soft_voting(model_list=model, images=images)
                     _, pred = torch.max(out, 1)
                 else:
+                    out = ensemble_models.single_input_hard_voting(model_list=model, images=images)
                     pred = out
             else:
                 model.eval()
@@ -48,7 +49,7 @@ def test_model(test_dataset, test_loader, model, model_name, is_ensemble=False, 
             num_correct += (pred == labels).sum()
 
             # 为混淆矩阵做准备
-            all_index = torch.arange(start=0, end=(images.shape[0]))
+            all_index = torch.arange(start=0, end=(images.shape[0])).to(DEVICE)
             wrong_idx = all_index[pred != labels]
             for w_idx in wrong_idx:
                 if ensemble_type == 'soft':
@@ -108,6 +109,7 @@ def multipleInput_voting(test_dataset, test_loader, model_list, ensemble_type='h
             if ensemble_type == 'soft':
                 out = ensemble_models.multiple_input_soft_voting([out1, out2, out3])
                 _, pred = torch.max(out, 1)
+                pred = pred.to(DEVICE)
             else:
                 out = ensemble_models.multiple_input_hard_voting([out1, out2, out3])
                 pred = out
@@ -119,7 +121,7 @@ def multipleInput_voting(test_dataset, test_loader, model_list, ensemble_type='h
             num_correct += (pred == labels).sum()
 
             # 为混淆矩阵做准备
-            all_index = torch.arange(start=0, end=image_num)
+            all_index = torch.arange(start=0, end=image_num).to(DEVICE)
             wrong_idx = all_index[pred != labels]
             for w_idx in wrong_idx:
                 if ensemble_type == 'soft':

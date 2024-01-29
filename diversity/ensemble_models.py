@@ -15,14 +15,14 @@ def single_input_hard_voting(model_list, images):
             _, pred = torch.max(out, 1)
             out_list.append(pred)
 
-    temp = [out_list[i] for i in range(len(out_list))]
+    temp = [out_list[i].cpu().numpy() for i in range(len(out_list))]
     res = np.stack(temp, axis=0)
 
     hard_res = res.sum(axis=0)
 
     hard_res[hard_res == 1] = 0
     hard_res[hard_res >= 2] = 1
-    hard_res = torch.tensor(hard_res)
+    hard_res = torch.tensor(hard_res).to(DEVICE)
 
     return hard_res
 

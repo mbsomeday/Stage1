@@ -52,3 +52,5 @@ if __name__ == '__main__':
 
     test.multipleInput_voting(test_dataset=test_dataset, test_loader=test_dataloader, model_list=model_list,
                               ensemble_type='soft')
+
+    dataset.MyDataset(base_dir=BASE_DIR, txt_dir=TXT_DIR, txt_name=txt_name,transform_list=transform_list)
