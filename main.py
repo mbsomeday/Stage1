@@ -1,30 +1,45 @@
 import argparse
+from torch.utils.data import DataLoader
 
-from cv_models import basic_learners
+from cv_models import DEVICE, basic_learners
 from utils import dataset
+from diversity import ensemble_models
 import test
 
+
 if __name__ == '__main__':
-    # 将pre-trained model错误的结果保存
     parser = argparse.ArgumentParser()
-    parser.add_argument('--model_name', type=str, choices=["CNN", "Inception", "ResNet"], required=True)
-    parser.add_argument('--pretrained', type=bool)
+    parser.add_argument('--model_name', type=str, required=True)
     parser.add_argument('--weights_path', type=str, required=False)
-    parser.add_argument('--image_dir', type=str, required=True)
-    parser.add_argument('--txt_dir', type=str, required=True)
-    parser.add_argument('--txt_name', type=str, choices=['train.txt', 'val.txt', 'test.txt'], required=True)
 
 
     args = parser.parse_args()
-    model_name = args.model_name
-    weights_path = args.weights_path
-    image_dir = args.image_dir
-    txt_dir = args.txt_dir
-    txt_name = args.txt_name
 
-    model = basic_learners.get_model(model_name=model_name, pretrained=True, weights_path=weights_path)
-    ret_dataset, ret_loader = dataset.get_dataloader(image_dir, txt_dir, txt_name, transformer_mode=1)
-    test.test_model(model=model, model_name=model_name, test_dataset=ret_dataset, test_loader=ret_loader)
+    model_name = args.model_name
+    CNN_weights_path = r'D:\my_phd\on_git\experiment\data\model_weights\MyNet-054-0.9708.pth'
+    Inception_weights_path = r'D:\my_phd\on_git\experiment\data\model_weights\Inception-043-0.99204081.pth'
+    ResNet_weights_path = r'D:\my_phd\on_git\experiment\data\model_weights\ResNet-035-0.9952.pth'
+
+    model = basic_learners.get_ensemble_model(pretrained=True, CNN_weights_path=CNN_weights_path,
+                                              Inception_weights_path=Inception_weights_path,
+                                              ResNet_weights_path=ResNet_weights_path)
+    # model = basic_learners.get_model(model_name=model_name, pretrained=True, weights_path=CNN_weights_path)
+
+    test_dataset = dataset.Fake_dataset()
+    test_dataloader = DataLoader(test_dataset, batch_size=4, shuffle=False, drop_last=False)
+
+    test.test_model(test_dataset=test_dataset, test_loader=test_dataloader, model=model, model_name='Ensemble',
+                    is_ensemble=True)
+
+
+
+
+
+
+
+
+
+
 
 
 

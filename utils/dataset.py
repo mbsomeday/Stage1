@@ -9,7 +9,7 @@ from torchvision import transforms
 
 
 class Fake_dataset(Dataset):
-    def __init__(self, total_num=500):
+    def __init__(self, total_num=100):
         super(Fake_dataset).__init__()
         self.images = torch.rand(size=(total_num, 1, 36, 18))
         self.labels = []
@@ -22,7 +22,8 @@ class Fake_dataset(Dataset):
         img = self.images[idx]
         label = self.labels[idx]
         label = np.array(label).astype(np.int64)
-        return img, label
+        img_name = 'test'
+        return img, label, img_name
 
 
 class MyDataset(Dataset):
