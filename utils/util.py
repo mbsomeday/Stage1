@@ -8,7 +8,7 @@ import os
 from tqdm import tqdm
 import argparse
 
-from cv_models import MODEL_DICT, DEVICE
+from cv_models import DEVICE
 from utils import dataset
 
 

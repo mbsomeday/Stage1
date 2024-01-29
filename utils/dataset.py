@@ -33,14 +33,14 @@ class MyDataset(Dataset):
         return len(self.labels)
 
     def __getitem__(self, item):
-        img = self.images[item]
+        image_name = self.images[item]
         label = self.labels[item]
-        img = Image.open(img)  # PIL image shape:（C, W, H）
+        img = Image.open(image_name)  # PIL image shape:（C, W, H）
         if self.transform is not None:
             img = self.transform(img)
         label = np.array(label).astype(np.int64)
         label = torch.from_numpy(label)
-        return img, label
+        return img, label, image_name
 
 
 class Dataset_for_ECPD(Dataset):
@@ -119,7 +119,7 @@ def get_dataloader(image_dir, txt_dir, txt_name, transformer_mode):
 
     img_transformer = get_image_transform(transformer_mode)
     ret_dataset = MyDataset(base_dir=image_dir, txt_dir=txt_dir, txt_name=txt_name, transform=img_transformer)
-    ret_loader = DataLoader(dataset=ret_dataset, batch_size=64, shuffle=False)
+    ret_loader = DataLoader(dataset=ret_dataset, batch_size=64, shuffle=False, drop_last=False)
 
     return ret_dataset, ret_loader
 

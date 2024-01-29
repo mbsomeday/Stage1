@@ -195,3 +195,13 @@ def get_model(model_name, pretrained=False, weights_path=None):
     else:
         print(f'Loaded un-pretrained {model_name} successfully!')
     return model
+
+# ==================================== 获取ensemble model ====================================
+
+def get_ensemble_model(pretrained=False, weights_dict=None):
+    model1 = get_model('CNN', pretrained, weights_dict['CNN'])
+    model2 = get_model('Inception', pretrained, weights_dict['Inception'])
+    model3 = get_model('ResNet', pretrained, weights_dict['ResNet'])
+    model_list = [model1, model2, model3]
+
+    return model_list

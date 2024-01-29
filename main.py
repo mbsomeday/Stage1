@@ -24,7 +24,7 @@ if __name__ == '__main__':
 
     model = basic_learners.get_model(model_name=model_name, pretrained=True, weights_path=weights_path)
     ret_dataset, ret_loader = dataset.get_dataloader(image_dir, txt_dir, txt_name, transformer_mode=1)
-    test.test_model(model, ret_dataset, ret_loader)
+    test.test_model(model=model, model_name=model_name, test_dataset=ret_dataset, test_loader=ret_loader)
 
 
 

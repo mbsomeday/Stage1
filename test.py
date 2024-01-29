@@ -3,6 +3,9 @@ import argparse
 import torch
 from torch.utils.data import DataLoader
 import os
+from sklearn.metrics import confusion_matrix
+import pandas as pd
+from tqdm import tqdm
 
 from diversity import ensemble_models
 from cv_models import basic_learners, DEVICE
@@ -64,7 +67,7 @@ def test_model_args(args):
         model2 = basic_learners.get_model('ResNet', pretrained=True, weights_path=ResNet_weight)
         model3 = basic_learners.get_model('Inception', pretrained=True, weights_path=Inception_weight)
 
-        model_list = [model1,model2, model3]
+        model_list = [model1, model2, model3]
     else:
         model = basic_learners.get_model(model_name, pretrained=True, weights_path=weights_path)
         model.eval()
@@ -87,43 +90,74 @@ def test_model_args(args):
         test_accuracy = num_correct / len(test_dataset)
         print(f'{model_name} accuracy is "{test_accuracy:.10f}')
 
-def test_model(model, test_dataset, test_loader):
-    model.eval()
+
+def test_model(test_dataset, test_loader, model_name, is_ensemble=False, weights_path=None):
+    '''
+        model_name: name of one model or 'SoftVoting' / 'HardVoting'
+    '''
+
+    if is_ensemble:
+        model_list = basic_learners.get_ensemble_model(pretrained=True, weights_dict=weights_path)
+    else:
+        model = basic_learners.get_model(model_name, pretrained=True, weights_path=weights_path)
+        model.eval()
+
     num_correct = 0
     hard_examples = []
+
+    # 预测结果和真实标签
+    y_pred = []
+    y_true = []
+
     with torch.no_grad():
-        for index, data in enumerate(test_loader):
+        for index, data in enumerate(tqdm(test_loader)):
             images, labels, image_names = data
             images = images.to(DEVICE)
             labels = labels.to(DEVICE)
-            out = model(images)
+            if is_ensemble:
+                out = ensemble_models.soft_voting(model_list=model_list, images=images)
+            else:
+                out = model(images)
             _, pred = torch.max(out, 1)
+            # 将label和pred加入列表中
+            y_pred.extend(pred.cpu().numpy())
+            y_true.extend(labels.cpu().numpy())
+
             num_correct += (pred == labels).sum()
-            # print(pred != labels)
             all_index = torch.arange(start=0, end=(images.shape[0]))
             wrong_idx = all_index[pred != labels]
-            # print('wrong idx:', wrong_idx)
-            wrongCase_labels = labels[wrong_idx]
-            # print('wrongCase_labels:', wrongCase_labels)
+            wrongCase_labels = labels[wrong_idx].item()
             wrong_out = out[wrong_idx]
-            # print('wrong_out:', wrong_out)
             for w_idx in wrong_idx:
-                wrongCase_info = image_names[w_idx] + ' ' + str(out[w_idx]) + ' ' + str(labels[w_idx].item())
+                wrongCase_info = image_names[w_idx] + ' ' + str(wrong_out) + ' ' + str(wrongCase_labels)
                 hard_examples.append(wrongCase_info)
-            # print('hard_examples:', hard_examples)
 
-        test_accuracy = num_correct / len(test_dataset)
+    # 写入混淆矩阵
+    write_to_dir = r'/content/drive/MyDrive/ColabNotebooks/data/model_evaluation'
+    cm_name = f'{model_name}.csv'
+    cm_path = os.path.join(write_to_dir, 'Confusion_metrics', cm_name)
+    cm = confusion_matrix(y_true, y_pred)
+    pd.DataFrame(cm).to_csv(cm_path, index=False, header=False)
+    print('Confusion file written successfully!')
 
-        with open('CNN_wrongCase.txt', 'w') as f:
-            for item in hard_examples:
-                f.write(item + '\n')
-        print(len(hard_examples))
-        print(f'Model accuracy is "{test_accuracy:.10f}')
+    # 写入错分样本
+    hard_example_name = f'{model_name}.txt'
+    hard_example_path = os.path.join(write_to_dir, 'Hard_example_predictions', hard_example_name)
+    with open(hard_example_path, 'w') as f:
+        for item in hard_examples:
+            f.write(item + '\n')
+    print('Hard examples written successfully!')
+    print(len(hard_examples))
+
+    test_accuracy = num_correct / len(test_dataset)
+    print(f'Model accuracy is "{test_accuracy:.10f}')
+
+
 
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='argparse testing')
-    parser.add_argument('--model_name', type=str,  choices=['CNN', 'Inception', 'ResNet'], default="Model", required=True)
+    parser.add_argument('--model_name', type=str,  choices=['CNN', 'Inception', 'ResNet', 'SoftVoting', 'HardVoting'], default="Model", required=True)
     parser.add_argument('--image_dir', type=str, required=True)
     parser.add_argument('--weighs_path', type=str, required=True)
     parser.add_argument('--is_ensemble', type=bool, required=True)
@@ -133,28 +167,6 @@ if __name__ == '__main__':
 
     args = parser.parse_args()
 
-    test_single_model(args)
-
-    # 将3个模型在新数据集上的结果保存为txt
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+    # test_model()
 
 
