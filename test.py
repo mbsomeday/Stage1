@@ -32,13 +32,15 @@ def test_model(test_dataset, test_loader, model, model_name, is_ensemble=False, 
             labels = labels.to(DEVICE)
             if is_ensemble:
                 out = ensemble_models.hard_voting(model_list=model, images=images)
+                if ensemble_type == 'soft':
+                    _, pred = torch.max(out, 1)
+                else:
+                    pred = out
             else:
                 model.eval()
                 out = model(images)
-            if ensemble_type == 'soft':
                 _, pred = torch.max(out, 1)
-            else:
-                pred = out
+
             # 将label和pred加入列表中
             y_pred.extend(pred.cpu().numpy())
             y_true.extend(labels.cpu().numpy())

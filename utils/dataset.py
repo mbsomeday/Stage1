@@ -146,6 +146,43 @@ def get_dataloader(image_dir, txt_dir, txt_name, transformer_mode):
     return ret_dataset, ret_loader
 
 
+class Dataset_for_multiInput(Dataset):
+    def __init__(self, base_dir, txt_dir=None, txt_name=None, transform_list=None):
+        super(Dataset_for_multiInput, self).__init__()
+        self.root = base_dir
+        self.txt_dir = txt_dir
+        txt_path = os.path.join(self.txt_dir, txt_name)
+        with open(txt_path, 'r') as f:
+            data = f.readlines()
+        images = []
+        labels = []
+        for line in data:
+            line = line.rstrip()
+            word = line.split()
+            images.append(os.path.join(self.root, word[0]))
+            labels.append(word[2])
+
+        self.images = images
+        self.labels = labels
+        self.transform = transform_list
+
+    def __len__(self):
+        return len(self.labels)
+
+    def __getitem__(self, item):
+        image_name = self.images[item]
+        label = self.labels[item]
+        img = Image.open(image_name)  # PIL image shape:（C, W, H）
+        img_list = []
+        for idx, trans in enumerate(self.transform):
+            img_list.append(trans(img))
+
+        label = np.array(label).astype(np.int64)
+        label = torch.from_numpy(label)
+
+        return img_list, label, image_name
+
+
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--image_dir', type=str, required=True)
