@@ -9,21 +9,28 @@ from torchvision import transforms
 
 
 class Fake_dataset(Dataset):
-    def __init__(self, total_num=100):
+    def __init__(self, total_num=10, transform2=None, transform3=None):
         super(Fake_dataset).__init__()
-        self.images = torch.rand(size=(total_num, 1, 36, 18))
+        self.img_path = r'D:\my_phd\on_git\experiment\img.pgm'
         self.labels = []
+        self.transform2 = transform2
+        self.transform3 = transform3
         for i in range(total_num):
             self.labels.append(1)
     def __len__(self):
         return len(self.labels)
 
     def __getitem__(self, idx):
-        img = self.images[idx]
+        img = Image.open(self.img_path)
+        img1 = self.transform2(img)
+        img2 = self.transform2(img)
+        img3 = self.transform3(img)
+
         label = self.labels[idx]
         label = np.array(label).astype(np.int64)
         img_name = 'test'
-        return img, label, img_name
+
+        return (img1, img2, img3), label, img_name
 
 
 class MyDataset(Dataset):
