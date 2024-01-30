@@ -17,6 +17,7 @@ class Fake_dataset(Dataset):
         self.transform3 = transform3
         for i in range(total_num):
             self.labels.append(1)
+
     def __len__(self):
         return len(self.labels)
 
@@ -34,37 +35,48 @@ class Fake_dataset(Dataset):
 
 
 class MyDataset(Dataset):
-    def __init__(self, base_dir, txt_dir=None, txt_name=None, transform=None):
-        super(MyDataset, self).__init__()
-        self.root = base_dir
+    def __init__(self, image_dir, txt_dir, txt_name, image_transformer, multinput=False):
+
+        super(MyDataset).__init__()
+        self.image_dir = image_dir
         self.txt_dir = txt_dir
-        txt_path = os.path.join(self.txt_dir, txt_name)
+        self.txt_name = txt_name
+        self.multinput = multinput
+        self.image_transformer = image_transformer
+
+        txt_path = os.path.join(txt_dir, txt_name)
         with open(txt_path, 'r') as f:
             data = f.readlines()
+
         images = []
         labels = []
         for line in data:
             line = line.rstrip()
             word = line.split()
-            images.append(os.path.join(self.root, word[0]))
+            images.append(os.path.join(self.image_dir, word[0]))
             labels.append(word[2])
 
         self.images = images
         self.labels = labels
-        self.transform = transform
 
     def __len__(self):
-        return len(self.labels)
+        return len(self.images)
 
     def __getitem__(self, item):
         image_name = self.images[item]
         label = self.labels[item]
         img = Image.open(image_name)  # PIL image shape:（C, W, H）
-        if self.transform is not None:
-            img = self.transform(img)
-        label = np.array(label).astype(np.int64)
-        label = torch.from_numpy(label)
-        return img, label, image_name
+
+        if not self.multinput:
+            # 单输入的情况
+            img = self.image_transformer(img)
+            return img, label, image_name
+        else:
+            # 需要对图片进行多种变化的情况
+            image_list = []
+            for trans in self.image_transformer:
+                image_list.append(trans(img))
+            return image_list, label, image_name
 
 
 class Dataset_for_ECPD(Dataset):
@@ -136,51 +148,6 @@ class dataset_for_Daimler(Dataset):
         label = np.array(label).astype(np.int64)
         label = torch.from_numpy(label)
         return img, label
-
-
-def get_dataloader(image_dir, txt_dir, txt_name, transformer_mode):
-    img_transformer = get_image_transform(transformer_mode)
-    ret_dataset = MyDataset(base_dir=image_dir, txt_dir=txt_dir, txt_name=txt_name, transform=img_transformer)
-    ret_loader = DataLoader(dataset=ret_dataset, batch_size=64, shuffle=False, drop_last=False)
-
-    return ret_dataset, ret_loader
-
-
-class Dataset_for_multiInput(Dataset):
-    def __init__(self, base_dir, txt_dir=None, txt_name=None, transform_list=None):
-        super(Dataset_for_multiInput, self).__init__()
-        self.root = base_dir
-        self.txt_dir = txt_dir
-        txt_path = os.path.join(self.txt_dir, txt_name)
-        with open(txt_path, 'r') as f:
-            data = f.readlines()
-        images = []
-        labels = []
-        for line in data:
-            line = line.rstrip()
-            word = line.split()
-            images.append(os.path.join(self.root, word[0]))
-            labels.append(word[2])
-
-        self.images = images
-        self.labels = labels
-        self.transform = transform_list
-
-    def __len__(self):
-        return len(self.labels)
-
-    def __getitem__(self, item):
-        image_name = self.images[item]
-        label = self.labels[item]
-        img = Image.open(image_name)  # PIL image shape:（C, W, H）
-        img_list = []
-        for idx, trans in enumerate(self.transform):
-            img_list.append(trans(img))
-
-        label = np.array(label).astype(np.int64)
-        label = torch.from_numpy(label)
-
-        return img_list, label, image_name
 
 
 if __name__ == '__main__':
