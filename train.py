@@ -4,42 +4,24 @@ import torch
 from torch.utils.data import DataLoader
 import os
 
-from cv_models import basic_learners
+from cv_models import basic_learners, DEVICE
 from utils.dataset import MyDataset
 
 
-def main(args):
-    BASE_DIR = r'images'
-    TXT_DIR = r'/content/drive/MyDrive/ColabNotebooks/data/dataset_txt'
+def main(model, model_name, train_dataset, train_loader,
+         val_dataset, val_loader,
+         weight_save_path):
 
-    device = 'cuda' if torch.cuda.is_available() else 'cpu'
-
-    func_dict = {"MyNet": basic_learners.MyNet,
-                 "Inception": basic_learners.Inception,
-                 "ResNet": basic_learners.ResNet
-                 }
-
-    model_name = args.model_name
-
-    model = func_dict.get(model_name)().to(device)
 
     loss_fn = torch.nn.CrossEntropyLoss()
     optimizer = torch.optim.SGD(model.parameters(), lr=0.01, momentum=0.9)
 
-    EPOCHS = args.epochs
-    BATCH_SIZE = args.batch_size
+    EPOCHS = 50
+    BATCH_SIZE = 64
     BEST_ACCURACY = -10.0
 
-    WEIGHT_SAVE_PATH = args.weight_save_path
+    WEIGHT_SAVE_PATH = weight_save_path
 
-    img_transformer = transforms.Compose([
-        transforms.ToTensor()
-    ])
-
-    train_dataset = MyDataset(base_dir=BASE_DIR, txt_dir=TXT_DIR, txt_name='train.txt', transform=img_transformer)
-    train_loader = DataLoader(dataset=train_dataset, batch_size=BATCH_SIZE, shuffle=True)
-    val_dataset = MyDataset(base_dir=BASE_DIR, txt_dir=TXT_DIR, txt_name='val.txt', transform=img_transformer)
-    val_loader = DataLoader(dataset=val_dataset, batch_size=BATCH_SIZE, shuffle=False)
 
     print('Total training samples:', len(train_dataset))
     print('Total index samples:', len(train_loader))
@@ -51,8 +33,8 @@ def main(args):
         running_loss = 0.0
         for batch, data in enumerate(train_loader):
             images, labels = data
-            images = images.to(device)
-            labels = labels.to(device)
+            images = images.to(DEVICE)
+            labels = labels.to(DEVICE)
 
             out = model(images)
 
@@ -75,8 +57,8 @@ def main(args):
         with torch.no_grad():
             for data in val_loader:
                 images, labels = data
-                images = images.to(device)
-                labels = labels.to(device)
+                images = images.to(DEVICE)
+                labels = labels.to(DEVICE)
                 out = model(images)
                 loss = loss_fn(out, labels)
                 _, pred = torch.max(out, 1)
@@ -119,12 +101,8 @@ def main(args):
 
 
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser(description='argparse testing')
-    parser.add_argument('--model_name', type=str,  choices=['MyNet', 'Inception', 'ResNet'], default="Model", required=True)
-    parser.add_argument('--epochs', type=int, default=50, required=True)
-    parser.add_argument('--batch_size', type=int, default=64, required=True)
-    parser.add_argument('--weight_save_path', type=str, required=True)
+    from cv_models import vgg_model
 
-    args = parser.parse_args()
+    model = vgg_model.vgg11()
 
-    main(args)
+

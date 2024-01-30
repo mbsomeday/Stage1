@@ -7,6 +7,8 @@ import numpy as np
 import os
 from torchvision import transforms
 
+from cv_models import DEVICE
+
 
 class Fake_dataset(Dataset):
     def __init__(self, total_num=10):
@@ -45,7 +47,7 @@ def get_image_transform(mode):
         ]),
         transforms.Compose([
             transforms.RandomHorizontalFlip(p=1),  # 水平翻转
-            transforms.ColorJitter(brightness=0.5, contrast=0.5, saturation=0.5, hue=0.2),
+            # transforms.ColorJitter(brightness=0.5, contrast=0.5, saturation=0.5, hue=0.2),
             transforms.ToTensor()
         ]),
         transforms.Compose([
@@ -53,7 +55,7 @@ def get_image_transform(mode):
             transforms.ToTensor()
         ])
     ]
-    if mode > 0:
+    if mode >= 0:
         return image_transform[mode]
     else:
         return image_transform
@@ -90,6 +92,7 @@ class MyDataset(Dataset):
     def __getitem__(self, item):
         image_name = self.images[item]
         label = self.labels[item]
+        label = np.array(label).astype(np.int64)
         img = Image.open(image_name)  # PIL image shape:（C, W, H）
 
         if not self.multinput:
