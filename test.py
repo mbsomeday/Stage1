@@ -6,14 +6,15 @@ import os
 from sklearn.metrics import confusion_matrix
 import pandas as pd
 from tqdm import tqdm
+import torch.nn.functional as F
 
 from diversity import ensemble_models
-from cv_models import basic_learners, DEVICE
+from cv_models import basic_learners, DEVICE, BASE_DIR, TXT_DIR, EVALUATION_DIR
 from utils.dataset import MyDataset
 from utils import dataset
 
 
-def test_model(test_dataset, test_loader, model, model_name, is_ensemble=False, ensemble_type=None):
+def test_model(test_dataset, test_loader, model, model_name, dataset_name, is_ensemble=False, ensemble_type=None):
     '''
         model_name: name of one model or 'SoftVoting' / 'HardVoting'
     '''
@@ -40,6 +41,7 @@ def test_model(test_dataset, test_loader, model, model_name, is_ensemble=False, 
             else:
                 model.eval()
                 out = model(images)
+                out = F.softmax(out, dim=1)
                 _, pred = torch.max(out, 1)
 
             # 将label和pred加入列表中
@@ -59,15 +61,15 @@ def test_model(test_dataset, test_loader, model, model_name, is_ensemble=False, 
                 hard_examples.append(wrongCase_info)
 
     # 写入混淆矩阵
-    write_to_dir = r'D:\my_phd\on_git\experiment\data'
-    cm_name = f'{model_name}.csv'
+    write_to_dir = EVALUATION_DIR
+    cm_name = f'Singleinput_{model_name}_{dataset_name}.csv'
     cm_path = os.path.join(write_to_dir, 'Confusion_metrics', cm_name)
     cm = confusion_matrix(y_true, y_pred)
     pd.DataFrame(cm).to_csv(cm_path, index=False, header=False)
     print(f'Successfully Confusion metric of {model_name} file written to {cm_path}!')
 
     # 写入错分样本
-    hard_example_name = f'{model_name}.txt'
+    hard_example_name = f'Singleinput_{model_name}_{dataset_name}.txt'
     hard_example_path = os.path.join(write_to_dir, 'Hard_example_predictions', hard_example_name)
     with open(hard_example_path, 'w') as f:
         for item in hard_examples:
@@ -80,7 +82,7 @@ def test_model(test_dataset, test_loader, model, model_name, is_ensemble=False, 
     print(f'{model_name} accuracy is "{test_accuracy:.10f}')
 
 
-def multipleInput_voting(test_dataset, test_loader, model_list, ensemble_type='hard'):
+def multipleInput_voting(test_dataset, test_loader, model_list, dataset_name, ensemble_type='hard'):
     model_name = 'multipleInput_softVoting' if ensemble_type=='soft' else 'multipleInput_hardVoting'
     num_correct = 0
     hard_examples = []
@@ -131,15 +133,15 @@ def multipleInput_voting(test_dataset, test_loader, model_list, ensemble_type='h
                 hard_examples.append(wrongCase_info)
 
     # 写入混淆矩阵
-    write_to_dir = r'D:\my_phd\on_git\experiment\data'
-    cm_name = f'{model_name}.csv'
+    write_to_dir = EVALUATION_DIR
+    cm_name = f'Singleinput_{model_name}_{dataset_name}.csv'
     cm_path = os.path.join(write_to_dir, 'Confusion_metrics', cm_name)
     cm = confusion_matrix(y_true, y_pred)
     pd.DataFrame(cm).to_csv(cm_path, index=False, header=False)
     print(f'Successfully Confusion metric of {model_name} file written to {cm_path}!')
 
     # 写入错分样本
-    hard_example_name = f'{model_name}.txt'
+    hard_example_name = f'Singleinput_{model_name}_{dataset_name}.txt'
     hard_example_path = os.path.join(write_to_dir, 'Hard_example_predictions', hard_example_name)
     with open(hard_example_path, 'w') as f:
         for item in hard_examples:

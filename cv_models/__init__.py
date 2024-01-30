@@ -16,3 +16,4 @@ CLOUD_MODEL_WEIGHTS = {
 
 BASE_DIR = r'/content/images'
 TXT_DIR = r'/content/drive/MyDrive/ColabNotebooks/data/dataset_txt'
+EVALUATION_DIR = r'/content/drive/MyDrive/ColabNotebooks/data/model_evaluation'

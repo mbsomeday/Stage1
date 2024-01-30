@@ -9,12 +9,11 @@ from torchvision import transforms
 
 
 class Fake_dataset(Dataset):
-    def __init__(self, total_num=10, transform2=None, transform3=None):
+    def __init__(self, total_num=10):
         super(Fake_dataset).__init__()
         self.img_path = r'D:\my_phd\on_git\experiment\img.pgm'
         self.labels = []
-        self.transform2 = transform2
-        self.transform3 = transform3
+        self.image_transform = get_image_transform(mode=1)
         for i in range(total_num):
             self.labels.append(1)
 
@@ -23,26 +22,52 @@ class Fake_dataset(Dataset):
 
     def __getitem__(self, idx):
         img = Image.open(self.img_path)
-        img1 = self.transform2(img)
-        img2 = self.transform2(img)
-        img3 = self.transform3(img)
+        image_list = []
+        for trans in self.image_transform:
+            image_list.append(trans(img))
 
         label = self.labels[idx]
         label = np.array(label).astype(np.int64)
         img_name = 'test'
 
-        return (img1, img2, img3), label, img_name
+        return image_list, label, img_name
+
+
+def get_image_transform(mode):
+    '''
+    Args:
+        mode: 1,2,3 -> return single transformer
+                -1 -> return transformer list
+    '''
+    image_transform = [
+        transforms.Compose([
+            transforms.ToTensor()
+        ]),
+        transforms.Compose([
+            transforms.RandomHorizontalFlip(p=1),  # 水平翻转
+            transforms.ColorJitter(brightness=0.5, contrast=0.5, saturation=0.5, hue=0.2),
+            transforms.ToTensor()
+        ]),
+        transforms.Compose([
+            transforms.RandomHorizontalFlip(p=0.5),  # 水平翻转
+            transforms.ToTensor()
+        ])
+    ]
+    if mode > 0:
+        return image_transform[mode]
+    else:
+        return image_transform
 
 
 class MyDataset(Dataset):
-    def __init__(self, image_dir, txt_dir, txt_name, image_transformer, multinput=False):
+    def __init__(self, image_dir, txt_dir, txt_name, transformer_mode, multinput=False):
 
         super(MyDataset).__init__()
         self.image_dir = image_dir
         self.txt_dir = txt_dir
         self.txt_name = txt_name
         self.multinput = multinput
-        self.image_transformer = image_transformer
+        self.image_transformer = get_image_transform(transformer_mode)
 
         txt_path = os.path.join(txt_dir, txt_name)
         with open(txt_path, 'r') as f:
@@ -109,25 +134,6 @@ class Dataset_for_ECPD(Dataset):
         return img, label
 
 
-def get_image_transform(mode):
-    if mode == 1:
-        image_transform = transforms.Compose([
-            transforms.ToTensor()
-        ])
-    elif mode == 2:
-        image_transform = transforms.Compose([
-            transforms.RandomHorizontalFlip(p=1),  # 水平翻转
-            transforms.ColorJitter(brightness=0.5, contrast=0.5, saturation=0.5, hue=0.2),
-            transforms.ToTensor()
-        ])
-    else:
-        image_transform = transforms.Compose([
-            transforms.RandomHorizontalFlip(p=0.5),  # 水平翻转
-            transforms.ToTensor()
-        ])
-    return image_transform
-
-
 class dataset_for_Daimler(Dataset):
     def __init__(self, image_dir, transform):
         super(dataset_for_Daimler).__init__()
@@ -150,8 +156,25 @@ class dataset_for_Daimler(Dataset):
         return img, label
 
 
-if __name__ == '__main__':
-    parser = argparse.ArgumentParser()
-    parser.add_argument('--image_dir', type=str, required=True)
-    parser.add_argument('--txt_dir', type=str, required=True, help='dir path that save image split .txt')
-    parser.add_argument('--type', type=str, choices=['train', 'test', 'val'], required=True)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
