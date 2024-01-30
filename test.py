@@ -62,14 +62,14 @@ def test_model(test_dataset, test_loader, model, model_name, dataset_name, is_en
 
     # 写入混淆矩阵
     write_to_dir = EVALUATION_DIR
-    cm_name = f'Singleinput_{model_name}_{dataset_name}.csv'
+    cm_name = f'{dataset_name}_Singleinput_{model_name}.csv'
     cm_path = os.path.join(write_to_dir, 'Confusion_metrics', cm_name)
     cm = confusion_matrix(y_true, y_pred)
     pd.DataFrame(cm).to_csv(cm_path, index=False, header=False)
     print(f'Successfully Confusion metric of {model_name} file written to {cm_path}!')
 
     # 写入错分样本
-    hard_example_name = f'Singleinput_{model_name}_{dataset_name}.txt'
+    hard_example_name = f'{dataset_name}_Singleinput_{model_name}.txt'
     hard_example_path = os.path.join(write_to_dir, 'Hard_example_predictions', hard_example_name)
     with open(hard_example_path, 'w') as f:
         for item in hard_examples:
@@ -134,14 +134,14 @@ def multipleInput_voting(test_dataset, test_loader, model_list, dataset_name, en
 
     # 写入混淆矩阵
     write_to_dir = EVALUATION_DIR
-    cm_name = f'Singleinput_{model_name}_{dataset_name}.csv'
+    cm_name = f'{dataset_name}_Multipleinput_{model_name}.csv'
     cm_path = os.path.join(write_to_dir, 'Confusion_metrics', cm_name)
     cm = confusion_matrix(y_true, y_pred)
     pd.DataFrame(cm).to_csv(cm_path, index=False, header=False)
     print(f'Successfully Confusion metric of {model_name} file written to {cm_path}!')
 
     # 写入错分样本
-    hard_example_name = f'Singleinput_{model_name}_{dataset_name}.txt'
+    hard_example_name = f'{dataset_name}_Multipleinput_{model_name}.txt'
     hard_example_path = os.path.join(write_to_dir, 'Hard_example_predictions', hard_example_name)
     with open(hard_example_path, 'w') as f:
         for item in hard_examples:
