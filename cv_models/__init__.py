@@ -12,7 +12,7 @@ CLOUD_MODEL_WEIGHTS = {
     'CNN': r'/content/drive/MyDrive/ColabNotebooks/data/model_weights/CNN/MyNet-054-0.9708.pth',
     'Inception': r'/content/drive/MyDrive/ColabNotebooks/data/model_weights/Inception/Inception-043-0.99204081.pth',
     'ResNet': r'/content/drive/MyDrive/ColabNotebooks/data/model_weights/ResNet/ResNet-035-0.9952.pth',
-    'VGG': r'/content/drive/MyDrive/ColabNotebooks/data/model_weights/vgg/Vgg11-026-0.98806125.pth',
+    'VGG': r'/content/drive/MyDrive/ColabNotebooks/data/model_weights/VGG/Vgg11-026-0.98806125.pth',
 }
 
 BASE_DIR = r'/content/images'

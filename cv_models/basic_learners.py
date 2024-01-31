@@ -2,7 +2,7 @@ from torch import nn
 import torch.nn.functional as F
 import torch
 
-from cv_models import DEVICE
+from cv_models import DEVICE, CLOUD_MODEL_WEIGHTS
 import vgg_model
 
 
@@ -200,12 +200,10 @@ def get_model(model_name, pretrained=False, weights_path=None):
 
 # ==================================== 获取ensemble model ====================================
 
-def get_ensemble_model(pretrained=False, CNN_weights_path=None, Inception_weights_path=None, ResNet_weights_path=None):
-    model1 = get_model('CNN', pretrained, CNN_weights_path)
-    model2 = get_model('Inception', pretrained, Inception_weights_path)
-    model3 = get_model('ResNet', pretrained, ResNet_weights_path)
-    model_list = [model1, model2, model3]
-
+def get_ensemble_model(model_name_list, pretrained=False):
+    model_list = []
+    for name in model_name_list:
+        model_list.append(get_model(name, pretrained=pretrained, weights_path=CLOUD_MODEL_WEIGHTS[name]))
     return model_list
 
 
