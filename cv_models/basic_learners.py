@@ -3,6 +3,7 @@ import torch.nn.functional as F
 import torch
 
 from cv_models import DEVICE
+import vgg_model
 
 
 # ==================================== CNN network ====================================
@@ -183,7 +184,8 @@ class Inception(nn.Module):
 MODEL_NAME = {
     "CNN": MyNet,
     "Inception": Inception,
-    "ResNet": ResNet
+    "ResNet": ResNet,
+    "VGG": vgg_model.vgg11
 }
 
 

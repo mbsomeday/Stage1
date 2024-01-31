@@ -38,7 +38,7 @@ class Fake_dataset(Dataset):
 def get_image_transform(mode):
     '''
     Args:
-        mode: 1,2,3 -> return single transformer
+        mode: 0, 1, 2 -> return single transformer
                 -1 -> return transformer list
     '''
     image_transform = [

@@ -36,6 +36,7 @@ def test_model(test_dataset, test_loader, model, dataset_name, model_name=None, 
                     model_name = 'SoftVoting'
                     out = ensemble_models.single_input_soft_voting(model_list=model, images=images)
                     _, pred = torch.max(out, 1)
+                    pred = pred.to(DEVICE)
                 else:
                     model_name = 'HardVoting'
                     out = ensemble_models.single_input_hard_voting(model_list=model, images=images)
@@ -45,6 +46,7 @@ def test_model(test_dataset, test_loader, model, dataset_name, model_name=None, 
                 out = model(images)
                 out = F.softmax(out, dim=1)
                 _, pred = torch.max(out, 1)
+
 
             # 将label和pred加入列表中
             y_pred.extend(pred.cpu().numpy())
@@ -116,7 +118,7 @@ def multipleInput_voting(test_dataset, test_loader, model_list, dataset_name, en
                 pred = pred.to(DEVICE)
             else:
                 out = ensemble_models.multiple_input_hard_voting([out1, out2, out3])
-                pred = out
+                pred = out.to(DEVICE)
 
             # 将label和pred加入列表中
             y_pred.extend(pred.cpu().numpy())

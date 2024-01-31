@@ -59,7 +59,7 @@ def multiple_input_hard_voting(model_outputs):
     out_list = []
     for out in model_outputs:
         _, pred = torch.max(out, 1)
-        out_list.append(pred)
+        out_list.append(pred.cpu().numpy())
 
     temp = [out_list[i] for i in range(len(out_list))]
     res = np.stack(temp, axis=0)
