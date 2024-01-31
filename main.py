@@ -11,6 +11,7 @@ import train
 if __name__ == '__main__':
 
     model = vgg_model.vgg11()
+    model = model.to(DEVICE)
     model_name = 'VGG11'
     txt_name = 'test.txt'
 
@@ -25,11 +26,15 @@ if __name__ == '__main__':
     # print('number of models:', len(model_list))
 
     # 用于单输入的
-    test_dataset = dataset.MyDataset(image_dir=BASE_DIR, txt_dir=TXT_DIR, txt_name=txt_name, transformer_mode=1)
-    test_dataloader = DataLoader(test_dataset, batch_size=64, shuffle=False, drop_last=False)
+    train_dataset = dataset.MyDataset(image_dir=BASE_DIR, txt_dir=TXT_DIR, txt_name='train.txt', transformer_mode=1)
+    train_dataloader = DataLoader(train_dataset, batch_size=64, shuffle=True, drop_last=False)
+
+    val_dataset = dataset.MyDataset(image_dir=BASE_DIR, txt_dir=TXT_DIR, txt_name='val.txt', transformer_mode=1)
+    val_dataloader = DataLoader(val_dataset, batch_size=64, shuffle=False, drop_last=False)
 
     # 模型训练
-    train
+    train.main(model=model, model_name='Vgg11', train_dataset=train_dataset, train_loader=train_dataloader,
+               val_dataset=val_dataset, val_loader=val_dataloader, weight_save_path=r'')
 
     # # 用于测试的dataset
     # test_dataset = dataset.Fake_dataset()

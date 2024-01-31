@@ -32,7 +32,7 @@ def main(model, model_name, train_dataset, train_loader,
         model.train()
         running_loss = 0.0
         for batch, data in enumerate(train_loader):
-            images, labels = data
+            images, labels, _ = data
             images = images.to(DEVICE)
             labels = labels.to(DEVICE)
 
@@ -56,7 +56,7 @@ def main(model, model_name, train_dataset, train_loader,
         num_correct = 0
         with torch.no_grad():
             for data in val_loader:
-                images, labels = data
+                images, labels, _ = data
                 images = images.to(DEVICE)
                 labels = labels.to(DEVICE)
                 out = model(images)
