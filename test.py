@@ -14,7 +14,7 @@ from utils.dataset import MyDataset
 from utils import dataset
 
 
-def test_model(test_dataset, test_loader, model, model_name, dataset_name, is_ensemble=False, ensemble_type=None):
+def test_model(test_dataset, test_loader, model, dataset_name, model_name=None, is_ensemble=False, ensemble_type=None):
     '''
         model_name: name of one model or 'SoftVoting' / 'HardVoting'
     '''
@@ -33,9 +33,11 @@ def test_model(test_dataset, test_loader, model, model_name, dataset_name, is_en
             labels = labels.to(DEVICE)
             if is_ensemble:
                 if ensemble_type == 'soft':
+                    model_name = 'SoftVoting'
                     out = ensemble_models.single_input_soft_voting(model_list=model, images=images)
                     _, pred = torch.max(out, 1)
                 else:
+                    model_name = 'HardVoting'
                     out = ensemble_models.single_input_hard_voting(model_list=model, images=images)
                     pred = out
             else:
@@ -83,7 +85,7 @@ def test_model(test_dataset, test_loader, model, model_name, dataset_name, is_en
 
 
 def multipleInput_voting(test_dataset, test_loader, model_list, dataset_name, ensemble_type='hard'):
-    model_name = 'multipleInput_softVoting' if ensemble_type=='soft' else 'multipleInput_hardVoting'
+    model_name = 'MultipleInput_SoftVoting' if ensemble_type=='soft' else 'MultipleInput_HardVoting'
     num_correct = 0
     hard_examples = []
 
@@ -134,14 +136,14 @@ def multipleInput_voting(test_dataset, test_loader, model_list, dataset_name, en
 
     # 写入混淆矩阵
     write_to_dir = EVALUATION_DIR
-    cm_name = f'{dataset_name}_Multipleinput_{model_name}.csv'
+    cm_name = f'{dataset_name}_{model_name}.csv'
     cm_path = os.path.join(write_to_dir, 'Confusion_metrics', cm_name)
     cm = confusion_matrix(y_true, y_pred)
     pd.DataFrame(cm).to_csv(cm_path, index=False, header=False)
     print(f'Successfully Confusion metric of {model_name} file written to {cm_path}!')
 
     # 写入错分样本
-    hard_example_name = f'{dataset_name}_Multipleinput_{model_name}.txt'
+    hard_example_name = f'{dataset_name}_{model_name}.txt'
     hard_example_path = os.path.join(write_to_dir, 'Hard_example_predictions', hard_example_name)
     with open(hard_example_path, 'w') as f:
         for item in hard_examples:
