@@ -2,8 +2,8 @@ from torch import nn
 import torch.nn.functional as F
 import torch
 
-from cv_models import DEVICE, CLOUD_MODEL_WEIGHTS
-import vgg_model
+from cv_models import DEVICE, CLOUD_MODEL_WEIGHTS, vgg_model, LOCAL_MODEL_WEIGHTS
+
 
 
 # ==================================== CNN network ====================================
@@ -203,7 +203,7 @@ def get_model(model_name, pretrained=False, weights_path=None):
 def get_ensemble_model(model_name_list, pretrained=False):
     model_list = []
     for name in model_name_list:
-        model_list.append(get_model(name, pretrained=pretrained, weights_path=CLOUD_MODEL_WEIGHTS[name]))
+        model_list.append(get_model(name, pretrained=pretrained, weights_path=LOCAL_MODEL_WEIGHTS[name]))
     return model_list
 
 

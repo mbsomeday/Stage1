@@ -43,8 +43,8 @@ def get_image_transform(mode):
     '''
     image_transform = [
         transforms.Compose([
-            transforms.Grayscale(num_output_channels=1),  # 彩色图像转灰度图像num_output_channels默认1
-            transforms.Resize([36, 18]),  # [h, w])
+            # transforms.Grayscale(num_output_channels=1),  # 彩色图像转灰度图像num_output_channels默认1
+            # transforms.Resize([36, 18]),  # [h, w])
             transforms.ToTensor()
         ]),
         transforms.Compose([

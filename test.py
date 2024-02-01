@@ -9,12 +9,12 @@ from tqdm import tqdm
 import torch.nn.functional as F
 
 from diversity import ensemble_models
-from cv_models import basic_learners, DEVICE, BASE_DIR, TXT_DIR, EVALUATION_DIR
+from cv_models import basic_learners, DEVICE, LOCAL_VARS
 from utils.dataset import MyDataset
 from utils import dataset
 
 
-def test_model(test_dataset, test_loader, model, dataset_name, model_name=None, is_ensemble=False, ensemble_type=None):
+def test_model(test_dataset, test_loader, model, dataset_name, model_name, is_ensemble=False, ensemble_type=None):
     '''
         model_name: name of one model or 'SoftVoting' / 'HardVoting'
     '''
@@ -33,12 +33,10 @@ def test_model(test_dataset, test_loader, model, dataset_name, model_name=None, 
             labels = labels.to(DEVICE)
             if is_ensemble:
                 if ensemble_type == 'soft':
-                    model_name = 'SoftVoting'
                     out = ensemble_models.single_input_soft_voting(model_list=model, images=images)
                     _, pred = torch.max(out, 1)
                     pred = pred.to(DEVICE)
                 else:
-                    model_name = 'HardVoting'
                     out = ensemble_models.single_input_hard_voting(model_list=model, images=images)
                     pred = out
             else:
@@ -65,16 +63,16 @@ def test_model(test_dataset, test_loader, model, dataset_name, model_name=None, 
                 hard_examples.append(wrongCase_info)
 
     # 写入混淆矩阵
-    write_to_dir = EVALUATION_DIR
-    cm_name = f'{dataset_name}_Singleinput_{model_name}.csv'
-    cm_path = os.path.join(write_to_dir, 'Confusion_metrics', cm_name)
+    write_to_dir = LOCAL_VARS['evaluation_dir']
+    cm_name = f'{model_name}.csv'
+    cm_path = os.path.join(write_to_dir, 'Confusion_Metrics', dataset_name, 'Baseline', cm_name)
     cm = confusion_matrix(y_true, y_pred)
     pd.DataFrame(cm).to_csv(cm_path, index=False, header=False)
     print(f'Successfully Confusion metric of {model_name} file written to {cm_path}!')
 
     # 写入错分样本
-    hard_example_name = f'{dataset_name}_Singleinput_{model_name}.txt'
-    hard_example_path = os.path.join(write_to_dir, 'Hard_example_predictions', hard_example_name)
+    hard_example_name = f'{model_name}.txt'
+    hard_example_path = os.path.join(write_to_dir, 'Hardexample_Predictions', dataset_name, 'Baseline', hard_example_name)
     with open(hard_example_path, 'w') as f:
         for item in hard_examples:
             f.write(item + '\n')
