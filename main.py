@@ -10,27 +10,26 @@ import train
 
 if __name__ == '__main__':
 
-    model_name = 'VGG'
+    model_name = 'CNN'
     weights_path = CLOUD_MODEL_WEIGHTS[model_name]
     model = basic_learners.get_model(model_name, pretrained=True, weights_path=weights_path)
     txt_name = 'test.txt'
 
     # weights_path = CLOUD_MODEL_WEIGHTS[model_name]
 
-    # model = basic_learners.get_model(model_name=model_name, pretrained=False, weights_path=weights_path)
-    model_list = basic_learners.get_ensemble_model(model_name_list=['CNN, Inception, VGG'], pretrained=True)
+    # model_list = basic_learners.get_ensemble_model(model_name_list=['CNN', 'Inception', 'VGG'], pretrained=True)
 
     # transform_list = [image_transform1, image_transform2, image_transform3]
     # print('number of models:', len(model_list))
 
     # 用于单输入的
-    train_dataset = dataset.MyDataset(image_dir=BASE_DIR, txt_dir=TXT_DIR, txt_name='train.txt', transformer_mode=1)
+    train_dataset = dataset.MyDataset(image_dir=BASE_DIR, txt_dir=TXT_DIR, txt_name='train.txt', transformer_mode=0)
     train_dataloader = DataLoader(train_dataset, batch_size=64, shuffle=True, drop_last=False)
 
-    val_dataset = dataset.MyDataset(image_dir=BASE_DIR, txt_dir=TXT_DIR, txt_name='val.txt', transformer_mode=1)
+    val_dataset = dataset.MyDataset(image_dir=BASE_DIR, txt_dir=TXT_DIR, txt_name='val.txt', transformer_mode=0)
     val_dataloader = DataLoader(val_dataset, batch_size=64, shuffle=False, drop_last=False)
 
-    test_dataset = dataset.MyDataset(image_dir=BASE_DIR, txt_dir=TXT_DIR, txt_name='test.txt', transformer_mode=1)
+    test_dataset = dataset.MyDataset(image_dir=BASE_DIR, txt_dir=TXT_DIR, txt_name='test.txt', transformer_mode=0)
     test_dataloader = DataLoader(test_dataset, batch_size=64, shuffle=False, drop_last=False)
 
     # # 模型训练
