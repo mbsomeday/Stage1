@@ -12,38 +12,6 @@ from cv_models import DEVICE
 from utils import dataset
 
 
-# 获取混淆矩阵并保存
-def get_cm(args):
-
-    model_name = args.model_name
-    dataset_name = args.dataset_name
-    weight_path = args.weight_path
-    write_to_file = args.write_to_file
-
-    model = MODEL_DICT.get(model_name)(pretrained=True, weights_path=weight_path)
-    _, test_loader = dataset.get_dataloader(args)
-
-    model.eval()
-    # 预测结果和真实标签
-    y_pred = []
-    y_true = []
-
-    with torch.no_grad():
-        for images, labels in tqdm(test_loader):
-            images = images.to(DEVICE)
-            labels = labels.to(DEVICE)
-
-            outputs = model(images)
-            _, predicted = torch.max(outputs.data, 1)
-
-            y_pred.extend(predicted.cpu().numpy())
-            y_true.extend(labels.cpu().numpy())
-
-    cm = confusion_matrix(y_true, y_pred)
-    pd.DataFrame(cm).to_csv(write_to_file, index=False, header=False)
-    print(f'Write confution metrics of {model_name} on {dataset_name} to {write_to_file}!')
-    return cm
-
 
 # 根据混淆矩阵计算某类的召回率
 # https://blog.csdn.net/a645676/article/details/127369713
@@ -71,17 +39,6 @@ def temp_Veen():
                               normalize_to=1.0,  # venn图占据figure的比例，1.0为占满
                               )
     plt.show()
-
-
-def evaluate_one_model(model, test_loader, test_dataset):
-    model.to(DEVICE)
-    out_list = []
-    model.eval()
-    with torch.no_grad():
-        for X, y in test_loader:
-            out = model(X)
-            _, pred = torch.max(out, 1)
-            out_list.append(pred)
 
 
 def image_filter(image_dir, txt_path):
@@ -135,16 +92,19 @@ def get_risk(csv_path):
     return risk
 
 
+# 制作segmentation数据集的txt
+def get_dataseTxt(base_dir, txt_path):
+    image_list = os.listdir(base_dir)
+    with open(txt_path, 'a') as f:
+        for image in image_list:
+            image_path = os.path.join(base_dir, image)
+            msg = image_path + ' ' + 'ped_examples 1\n'
+            f.write(msg)
+
+
+
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser(description='argparse')
-    parser.add_argument('--model_name', type=str, choices=['MyNet', 'Inception', 'ResNet'], default="Model",
-                        required=True)
-    parser.add_argument('--weight_path', type=str, required=True)
-    parser.add_argument('--write_to_file', type=str, required=True)
-    parser.add_argument('--image_dir', type=str, required=True)
-    parser.add_argument('--txt_dir', type=str, required=True, help='dir path that save image split .txt')
-    parser.add_argument('--type', type=str, choices=['train', 'test', 'val'], required=True)
+    base_dir = r'D:\chrom_download\DaimlerPedestrianDetectionBenchmark\PedCut2013_SegmentationDataset\data\completeData\left_images'
+    txt_path = r'D:\my_phd\on_git\experiment\data\dataset_txt\DaiPedSegmentation\test.txt'
+    get_dataseTxt(base_dir, txt_path)
 
-    args = parser.parse_args()
-
-    get_cm(args)

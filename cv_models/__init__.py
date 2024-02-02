@@ -12,8 +12,11 @@ LOCAL = {
     },
     # 使用的常量
     'vars': {
-        'base_dir': r'D:\chrom_download\DaimlerPedestrianDetectionBenchmark\DC-ped-dataset_base',
-        'txt_dir': r'D:\my_phd\on_git\experiment\data\dataset_txt',
+        # 'base_dir': r'D:\chrom_download\DaimlerPedestrianDetectionBenchmark\DC-ped-dataset_base',
+
+        # 'txt_dir': r'D:\my_phd\on_git\experiment\data\dataset_txt\DaiPedClassify',
+        'base_dir': r'D:\chrom_download\DaimlerPedestrianDetectionBenchmark\PedCut2013_SegmentationDataset\data\completeData\left_images',
+        'txt_dir': 'D:\my_phd\on_git\experiment\data\dataset_txt\DaiPedSegmentation',
         'evaluation_dir': r'D:\my_phd\on_git\experiment\data\Model_Evaluation'
     }
 }
