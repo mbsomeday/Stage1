@@ -17,9 +17,7 @@ def single_input_hard_voting(model_list, images):
 
     temp = [out_list[i].cpu().numpy() for i in range(len(out_list))]
     res = np.stack(temp, axis=0)
-
     hard_res = res.sum(axis=0)
-
     hard_res[hard_res == 1] = 0
     hard_res[hard_res >= 2] = 1
     hard_res = torch.tensor(hard_res).to(DEVICE)
@@ -63,28 +61,14 @@ def multiple_input_hard_voting(model_outputs):
 
     temp = [out_list[i] for i in range(len(out_list))]
     res = np.stack(temp, axis=0)
-
     hard_res = res.sum(axis=0)
-
     hard_res[hard_res == 1] = 0
     hard_res[hard_res >= 2] = 1
     hard_res = torch.tensor(hard_res)
 
     return hard_res
 
-if __name__ == '__main__':
-    print('-' * 30 + 'ensemble models' + '-' * 30)
-    torch.manual_seed(13)
 
-    model1 = basic_learners.get_model('CNN', pretrained=False)
-    model2 = basic_learners.get_model('ResNet')
-    model3 = basic_learners.get_model('Inception')
-
-    model_list = [model1, model2, model3]
-    images = torch.rand(size=(5, 1, 36, 18))
-
-    hardres = hard_voting(model_list, images)
-    print(hardres)
 
 
 

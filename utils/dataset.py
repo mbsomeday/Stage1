@@ -10,31 +10,6 @@ from torchvision import transforms
 from cv_models import DEVICE
 
 
-class Fake_dataset(Dataset):
-    def __init__(self, total_num=10):
-        super(Fake_dataset).__init__()
-        self.img_path = r'D:\my_phd\on_git\experiment\img.pgm'
-        self.labels = []
-        self.image_transform = get_image_transform(mode=1)
-        for i in range(total_num):
-            self.labels.append(1)
-
-    def __len__(self):
-        return len(self.labels)
-
-    def __getitem__(self, idx):
-        img = Image.open(self.img_path)
-        image_list = []
-        for trans in self.image_transform:
-            image_list.append(trans(img))
-
-        label = self.labels[idx]
-        label = np.array(label).astype(np.int64)
-        img_name = 'test'
-
-        return image_list, label, img_name
-
-
 def get_image_transform(mode):
     '''
     Args:
@@ -64,16 +39,17 @@ def get_image_transform(mode):
 
 
 class MyDataset(Dataset):
-    def __init__(self, image_dir, txt_dir, txt_name, transformer_mode, multinput=False):
+    def __init__(self, running_on, txt_name, transformer_mode=None, multinput=False):
 
         super(MyDataset).__init__()
-        self.image_dir = image_dir
-        self.txt_dir = txt_dir
+        self.image_dir = running_on['vars']['base_dir']
+        self.txt_dir = running_on['vars']['txt_dir']
         self.txt_name = txt_name
         self.multinput = multinput
-        self.image_transformer = get_image_transform(transformer_mode)
+        self.transformer_mode = -1 if multinput else transformer_mode
+        self.image_transformer = get_image_transform(self.transformer_mode)
 
-        txt_path = os.path.join(txt_dir, txt_name)
+        txt_path = os.path.join(self.txt_dir, txt_name)
         with open(txt_path, 'r') as f:
             data = f.readlines()
 

@@ -2,7 +2,7 @@ import argparse
 from torch.utils.data import DataLoader
 from torchvision import transforms
 
-from cv_models import DEVICE, basic_learners, CLOUD_MODEL_WEIGHTS, CLOUD_VARS, LOCAL_MODEL_WEIGHTS, LOCAL_VARS
+from cv_models import DEVICE, basic_learners, LOCAL, CLOUD
 from utils import dataset
 from diversity import ensemble_models
 import test

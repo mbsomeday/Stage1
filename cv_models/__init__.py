@@ -4,7 +4,7 @@ DEVICE = 'cuda' if torch.cuda.is_available() else 'cpu'
 
 LOCAL = {
     # 模型权重
-    'model_weights': {
+    'weights_path': {
         'CNN': r'D:\my_phd\on_git\experiment\data\model_weights\MyNet-054-0.9708.pth',
         'Inception': r'D:\my_phd\on_git\experiment\data\model_weights\Inception-043-0.99204081.pth',
         'ResNet': r'D:\my_phd\on_git\experiment\data\model_weights\ResNet-035-0.9952.pth',
@@ -20,7 +20,7 @@ LOCAL = {
 
 CLOUD = {
     # 模型权重
-    'model_weights': {
+    'weights_path': {
         'CNN': r'/content/drive/MyDrive/ColabNotebooks/data/model_weights/CNN/MyNet-054-0.9708.pth',
         'Inception': r'/content/drive/MyDrive/ColabNotebooks/data/model_weights/Inception/Inception-043-0.99204081.pth',
         'ResNet': r'/content/drive/MyDrive/ColabNotebooks/data/model_weights/ResNet/ResNet-035-0.9952.pth',

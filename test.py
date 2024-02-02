@@ -9,15 +9,45 @@ from tqdm import tqdm
 import torch.nn.functional as F
 
 from diversity import ensemble_models
-from cv_models import basic_learners, DEVICE, LOCAL_VARS
-from utils.dataset import MyDataset
-from utils import dataset
+from cv_models import DEVICE, diversity
 
 
-def test_model(test_dataset, test_loader, model, dataset_name, model_name, is_ensemble=False, ensemble_type=None):
-    '''
-        model_name: name of one model or 'SoftVoting' / 'HardVoting'
-    '''
+def write_CM_HardExamples(runningOn, isCM, isHardExample, **kwargs):
+    write_to_dir = runningOn['vars']['evaluation_dir']
+
+    model_name = kwargs["model_name"]
+    dataset_name = kwargs["dataset_name"]
+    dir_name = kwargs['dir_name']
+    file_suffix = '' if dir_name == 'Baseline' else '_' + kwargs['ensemble_type']
+
+    # 写入混淆矩阵
+    if isCM:
+        cm_name = f'{model_name}{file_suffix}.csv'
+        cm_path = os.path.join(write_to_dir, 'Confusion_Metrics', kwargs["dataset_name"], dir_name, cm_name)
+        cm = confusion_matrix(kwargs['y_true'], kwargs['y_pred'])
+        # pd.DataFrame(cm).to_csv(cm_path, index=False, header=False)
+        print(f'Successfully Confusion metric of {model_name} file written to {cm_path}!')
+
+    # 写入错分样本
+    if isHardExample:
+        hard_examples = kwargs["hard_examples"]
+
+        hard_example_name = f'{model_name}{file_suffix}.txt'
+        hard_example_path = os.path.join(write_to_dir, 'Hardexample_Predictions', dataset_name, dir_name,
+                                         hard_example_name)
+        # with open(hard_example_path, 'w') as f:
+        #     for item in hard_examples:
+        #         f.write(item + '\n')
+        print(f'Hard example predictions of {model_name} file written to {hard_example_path} successfully!')
+        print('错分样本数量:', len(hard_examples))
+
+
+def test_singleInput(runningOn, test_dataset, test_loader, model=None, model_list=None, **kwargs):
+    model_name = kwargs["model_name"]
+    dataset_name = kwargs["dataset_name"]
+    ensemble_type = kwargs["ensemble_type"]
+
+    print('-' * 30 + 'Start Testing' + '-' * 30)
 
     num_correct = 0
     hard_examples = []
@@ -31,20 +61,18 @@ def test_model(test_dataset, test_loader, model, dataset_name, model_name, is_en
             images, labels, image_names = data
             images = images.to(DEVICE)
             labels = labels.to(DEVICE)
-            if is_ensemble:
-                if ensemble_type == 'soft':
-                    out = ensemble_models.single_input_soft_voting(model_list=model, images=images)
-                    _, pred = torch.max(out, 1)
-                    pred = pred.to(DEVICE)
-                else:
-                    out = ensemble_models.single_input_hard_voting(model_list=model, images=images)
-                    pred = out
+            if ensemble_type == 'soft':
+                out = diversity.softVoting(inpuType='Single', model_list=model_list, images=images)
+                _, pred = torch.max(out, 1)
+                pred = pred.to(DEVICE)
+            elif ensemble_type == 'hard':
+                out = diversity.hardVoting(inpuType='Single', model_list=model_list, images=images)
+                pred = out
             else:
                 model.eval()
                 out = model(images)
                 out = F.softmax(out, dim=1)
                 _, pred = torch.max(out, 1)
-
 
             # 将label和pred加入列表中
             y_pred.extend(pred.cpu().numpy())
@@ -57,35 +85,46 @@ def test_model(test_dataset, test_loader, model, dataset_name, model_name, is_en
             wrong_idx = all_index[pred != labels]
             for w_idx in wrong_idx:
                 if ensemble_type == 'soft':
-                    wrongCase_info = image_names[w_idx] + ' ' + str(out[w_idx, :].tolist()) + ' ' + str(labels[w_idx].item())
+                    wrongCase_info = image_names[w_idx] + ' ' + str(out[w_idx, :].tolist()) + ' ' + str(
+                        labels[w_idx].item())
                 else:
                     wrongCase_info = image_names[w_idx] + ' ' + str(out[w_idx]) + ' ' + str(labels[w_idx].item())
                 hard_examples.append(wrongCase_info)
 
-    # 写入混淆矩阵
-    write_to_dir = LOCAL_VARS['evaluation_dir']
-    cm_name = f'{model_name}.csv'
-    cm_path = os.path.join(write_to_dir, 'Confusion_Metrics', dataset_name, 'Baseline', cm_name)
-    cm = confusion_matrix(y_true, y_pred)
-    pd.DataFrame(cm).to_csv(cm_path, index=False, header=False)
-    print(f'Successfully Confusion metric of {model_name} file written to {cm_path}!')
+            break
 
-    # 写入错分样本
-    hard_example_name = f'{model_name}.txt'
-    hard_example_path = os.path.join(write_to_dir, 'Hardexample_Predictions', dataset_name, 'Baseline', hard_example_name)
-    with open(hard_example_path, 'w') as f:
-        for item in hard_examples:
-            f.write(item + '\n')
-    print('Hard examples written successfully!')
-    print('错分样本数量:', len(hard_examples))
+    # 写入混淆矩阵
+    dir_name = 'Baseline' if not ensemble_type else 'SingleInput'
+    write_CM_HardExamples(runningOn, isCM=True, isHardExample=True, ensemble_type=ensemble_type, y_true=y_true,
+                          y_pred=y_pred,
+                          dir_name=dir_name,
+                          model_name=model_name, dataset_name=dataset_name, hard_examples=hard_examples)
+    # write_to_dir = CLOUD_VARS['evaluation_dir']
+    # cm_name = f'{model_name}.csv'
+    # cm_path = os.path.join(write_to_dir, 'Confusion_Metrics', dataset_name, 'Baseline', cm_name)
+    # cm = confusion_matrix(y_true, y_pred)
+    # pd.DataFrame(cm).to_csv(cm_path, index=False, header=False)
+    # print(f'Successfully Confusion metric of {model_name} file written to {cm_path}!')
+
+    # # 写入错分样本
+    # hard_example_name = f'{model_name}.txt'
+    # hard_example_path = os.path.join(write_to_dir, 'Hardexample_Predictions', dataset_name, 'Baseline', hard_example_name)
+    # with open(hard_example_path, 'w') as f:
+    #     for item in hard_examples:
+    #         f.write(item + '\n')
+    # print('Hard examples written successfully!')
+    # print('错分样本数量:', len(hard_examples))
 
     # 输出正确率
     test_accuracy = num_correct / len(test_dataset)
     print(f'{model_name} accuracy is "{test_accuracy:.10f}')
 
 
-def multipleInput_voting(test_dataset, test_loader, model_list, dataset_name, ensemble_type='hard'):
-    model_name = 'MultipleInput_SoftVoting' if ensemble_type=='soft' else 'MultipleInput_HardVoting'
+def test_multipleInput(runningOn, test_dataset, test_loader, model_list=None, **kwargs):
+    model_name = kwargs["model_name"]
+    dataset_name = kwargs["dataset_name"]
+    ensemble_type = kwargs["ensemble_type"]
+
     num_correct = 0
     hard_examples = []
 
@@ -94,7 +133,7 @@ def multipleInput_voting(test_dataset, test_loader, model_list, dataset_name, en
     y_true = []
 
     with torch.no_grad():
-        for index, data in enumerate(test_loader):
+        for index, data in enumerate(tqdm(test_loader)):
             # print(index)
             images, labels, image_names = data
 
@@ -129,31 +168,35 @@ def multipleInput_voting(test_dataset, test_loader, model_list, dataset_name, en
             wrong_idx = all_index[pred != labels]
             for w_idx in wrong_idx:
                 if ensemble_type == 'soft':
-                    wrongCase_info = image_names[w_idx] + ' ' + str(out[w_idx, :].tolist()) + ' ' + str(labels[w_idx].item())
+                    wrongCase_info = image_names[w_idx] + ' ' + str(out[w_idx, :].tolist()) + ' ' + str(
+                        labels[w_idx].item())
                 else:
                     wrongCase_info = image_names[w_idx] + ' ' + str(out[w_idx]) + ' ' + str(labels[w_idx].item())
                 hard_examples.append(wrongCase_info)
 
-    # 写入混淆矩阵
-    write_to_dir = EVALUATION_DIR
-    cm_name = f'{dataset_name}_{model_name}.csv'
-    cm_path = os.path.join(write_to_dir, 'Confusion_metrics', cm_name)
-    cm = confusion_matrix(y_true, y_pred)
-    pd.DataFrame(cm).to_csv(cm_path, index=False, header=False)
-    print(f'Successfully Confusion metric of {model_name} file written to {cm_path}!')
+            break
 
-    # 写入错分样本
-    hard_example_name = f'{dataset_name}_{model_name}.txt'
-    hard_example_path = os.path.join(write_to_dir, 'Hard_example_predictions', hard_example_name)
-    with open(hard_example_path, 'w') as f:
-        for item in hard_examples:
-            f.write(item + '\n')
-    print(f'Wrong examples written successfully!')
-    print('错分样本数量:', len(hard_examples))
+    # 写入混淆矩阵
+    write_CM_HardExamples(runningOn, isCM=True, isHardExample=True, ensemble_type=ensemble_type, y_true=y_true,
+                          y_pred=y_pred,
+                          dir_name='MultipleInput',
+                          model_name=model_name, dataset_name=dataset_name, hard_examples=hard_examples)
+    # write_to_dir = EVALUATION_DIR
+    # cm_name = f'{dataset_name}_{model_name}.csv'
+    # cm_path = os.path.join(write_to_dir, 'Confusion_metrics', cm_name)
+    # cm = confusion_matrix(y_true, y_pred)
+    # pd.DataFrame(cm).to_csv(cm_path, index=False, header=False)
+    # print(f'Successfully Confusion metric of {model_name} file written to {cm_path}!')
+    #
+    # # 写入错分样本
+    # hard_example_name = f'{dataset_name}_{model_name}.txt'
+    # hard_example_path = os.path.join(write_to_dir, 'Hard_example_predictions', hard_example_name)
+    # with open(hard_example_path, 'w') as f:
+    #     for item in hard_examples:
+    #         f.write(item + '\n')
+    # print(f'Wrong examples written successfully!')
+    # print('错分样本数量:', len(hard_examples))
 
     # 输出正确率
     test_accuracy = num_correct / len(test_dataset)
     print(f'{model_name} accuracy is "{test_accuracy:.10f}')
-
-
-

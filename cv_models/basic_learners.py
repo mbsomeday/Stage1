@@ -2,7 +2,7 @@ from torch import nn
 import torch.nn.functional as F
 import torch
 
-from cv_models import DEVICE, CLOUD_MODEL_WEIGHTS, vgg_model, LOCAL_MODEL_WEIGHTS
+from cv_models import DEVICE, vgg_model, LOCAL, CLOUD
 
 
 
@@ -189,21 +189,5 @@ MODEL_NAME = {
 }
 
 
-def get_model(model_name, pretrained=False, weights_path=None):
-    model = MODEL_NAME.get(model_name)().to(DEVICE)
-    if pretrained:
-        model.load_state_dict(torch.load(weights_path, map_location=torch.device(DEVICE)))
-        print(f'Loaded pretrained {model_name} successfully!')
-    else:
-        print(f'Loaded un-pretrained {model_name} successfully!')
-    return model
-
-# ==================================== 获取ensemble model ====================================
-
-def get_ensemble_model(model_name_list, pretrained=False):
-    model_list = []
-    for name in model_name_list:
-        model_list.append(get_model(name, pretrained=pretrained, weights_path=LOCAL_MODEL_WEIGHTS[name]))
-    return model_list
 
 
