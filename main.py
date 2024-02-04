@@ -24,7 +24,7 @@ test.test_singleInput(runningOn=LOCAL, test_dataset=test_dataset, test_loader=te
                       # model_list=model_list,
                       model_name=model_name, dataset_name='DaiPedSegmentation', ensemble_type=None
                       )
-#
+#DaiPedClassification
 # test.test_multipleInput(runningOn=LOCAL, test_dataset=test_dataset, test_loader=test_loader, model_list=model_list,
 #                         model_name=model_name, dataset_name='DaiPedSegmentation', ensemble_type='hard'
 #                         )

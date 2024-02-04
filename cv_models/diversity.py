@@ -20,7 +20,7 @@ def hardVoting(inpuType, model_list=None, images=None, model_outputs=None):
             _, pred = torch.max(out, 1)
             out_list.append(pred.cpu().numpy())
 
-    temp = [out_list[i] for i in range(len(out_list))]
+    temp = [out_list[i].cpu().numpy() for i in range(len(out_list))]
     res = np.stack(temp, axis=0)
     hard_res = res.sum(axis=0)
     hard_res[hard_res == 1] = 0
