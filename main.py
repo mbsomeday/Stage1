@@ -5,11 +5,11 @@ from utils import dataset
 import test
 
 
-# model_name = 'ResNet'
-# model = get_model.get_single_model(model_name, running_on=LOCAL, pretrained=True)
+model_name = 'VGG'
+model = get_model.get_single_model(model_name, running_on=LOCAL, pretrained=True)
 
-model_name = 'CNNIncVGG'
-model_list = get_model.get_ensemble_model(['Inception', 'CNN', 'VGG'], running_on=LOCAL, pretrained=True)
+# model_name = 'CNNIncVGG'
+# model_list = get_model.get_ensemble_model(['Inception', 'CNN', 'VGG'], running_on=LOCAL, pretrained=True)
 
 # 单输入的dataset
 test_dataset = dataset.MyDataset(running_on=LOCAL, txt_name='test.txt', transformer_mode=0)
@@ -20,9 +20,9 @@ test_dataset = dataset.MyDataset(running_on=LOCAL, txt_name='test.txt', transfor
 test_loader = DataLoader(test_dataset, 64, shuffle=False)
 
 test.test_singleInput(runningOn=LOCAL, test_dataset=test_dataset, test_loader=test_loader,
-                      # model=model,
-                      model_list=model_list,
-                      model_name=model_name, dataset_name='DaiPedSegmentation', ensemble_type='soft'
+                      model=model,
+                      # model_list=model_list,
+                      model_name=model_name, dataset_name='DaiPedSegmentation', ensemble_type=None
                       )
 #
 # test.test_multipleInput(runningOn=LOCAL, test_dataset=test_dataset, test_loader=test_loader, model_list=model_list,

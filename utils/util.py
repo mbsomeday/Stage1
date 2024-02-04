@@ -7,10 +7,10 @@ from PIL import Image
 import os
 from tqdm import tqdm
 import argparse
+import re
 
 from cv_models import DEVICE
 from utils import dataset
-
 
 
 # 根据混淆矩阵计算某类的召回率
@@ -102,9 +102,87 @@ def get_dataseTxt(base_dir, txt_path):
             f.write(msg)
 
 
+def re_write_txt_file(org_txt_pat, dest_txt_path):
+    '''
+        将pred txt文件增添新列内容
+    '''
+
+    with open(org_txt_pat, 'r') as f:
+        data = f.readlines()
+
+    conf_cls_data = []
+
+    for idx, item in enumerate(data):
+        item = item.strip()
+
+        right_label = int(item[-1])
+        wrong_label = 1 - right_label
+        processed = re.sub(r'[\[\]]', '*', item)
+
+        processed = processed.split('*')
+        preds = processed[1].split(',')
+
+        conf_on_wrong_cls = float(preds[wrong_label])
+
+        if conf_on_wrong_cls < 0.7:
+            conf_cls = 'low'
+        elif conf_on_wrong_cls < 0.9:
+            conf_cls = 'medium'
+        else:
+            conf_cls = 'high'
+
+        msg = item + ' ' + conf_cls
+        conf_cls_data.append(msg)
+
+    with open(dest_txt_path, 'w') as f:
+        for item in conf_cls_data:
+            f.write(item + '\n')
+
+
+def get_overConfExamples(txt_path):
+    with open(txt_path, 'r') as f:
+        data = f.readlines()
+    over_conf_examples = []
+    for item in data:
+        item = item.strip()
+        content = item.split(' ')
+        conf_cls = content[-1]
+        if conf_cls == 'high':
+            over_conf_examples.append(content[0])
+
+    return over_conf_examples
+
+
+def get_saved_num(a, b, c):
+    inter_abc = list(set(a).intersection(b, c))
+    inter_ab = list(set(a).intersection(b))
+    inter_ac = list(set(a).intersection(c))
+    inter_bc = list(set(b).intersection(c))
+
+    union_abc = list(set(a).union(b, c))  # 求多个list的并集
+
+    save_num = len(union_abc) - len(inter_ab) - len(inter_ac) - len(inter_bc) + 2 * len(inter_abc)
+
+    print('len(union_abc):', len(union_abc))
+    print('saved_num:', save_num)
+
 
 if __name__ == '__main__':
-    base_dir = r'D:\chrom_download\DaimlerPedestrianDetectionBenchmark\PedCut2013_SegmentationDataset\data\completeData\left_images'
-    txt_path = r'D:\my_phd\on_git\experiment\data\dataset_txt\DaiPedSegmentation\test.txt'
-    get_dataseTxt(base_dir, txt_path)
+    org_path = r'D:\my_phd\on_git\experiment\data\Model_Evaluation\Hardexample_Predictions\DaiPedClassify\Baseline\CNN.txt'
+    dest_path = r'D:\my_phd\on_git\experiment\data\Model_Evaluation\Hardexample_Predictions\DaiPedClassify\Baseline\test.txt'
+    re_write_txt_file(org_txt_pat=org_path, dest_txt_path=dest_path)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
